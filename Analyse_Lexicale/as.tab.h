@@ -45,14 +45,33 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    tNB = 258,
-    tADD = 259,
-    tSUB = 260,
-    tOB = 261,
-    tCB = 262,
-    tPV = 263,
-    tERROR = 264,
-    tMAIN = 265
+    tMAIN = 258,
+    tOBRACKET = 259,
+    tCBRACKET = 260,
+    tOBRACE = 261,
+    tCBRACE = 262,
+    tINT = 263,
+    tCONST = 264,
+    tPV = 265,
+    tCOMA = 266,
+    tMUL = 267,
+    tDIV = 268,
+    tADD = 269,
+    tSUB = 270,
+    tEQ = 271,
+    tNB = 272,
+    tNBEXP = 273,
+    tID = 274,
+    tPRINTF = 275,
+    tERROR = 276,
+    tIF = 277,
+    tWHILE = 278,
+    tELSE = 279,
+    tLT = 280,
+    tGT = 281,
+    tEQCOND = 282,
+    tAND = 283,
+    tOR = 284
   };
 #endif
 
@@ -64,8 +83,9 @@ union YYSTYPE
 #line 1 "as.y" /* yacc.c:1909  */
 
 	int nombre;
+    char id[30];
 
-#line 69 "as.tab.h" /* yacc.c:1909  */
+#line 89 "as.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
