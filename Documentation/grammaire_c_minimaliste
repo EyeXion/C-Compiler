@@ -1,0 +1,52 @@
+les fonctions (avec parametres)
+le if
+le while
+les declarations
+les affectations
+les operations arith.
+le retour de fonction
+l'invocation de fonctions
+
+
+C : Fonctions ;
+Fonctions : Fonction Fonctions | Fonction ;
+
+Fonction : tInt tID tPO Params tPF Body ;
+
+Params : | Param SuiteParams ;
+Param : tInt tID ;
+
+SuiteParams : tVirgule Param SuiteParams | ;
+
+// Ps : P Ps | ;
+// P : tInt tID tVirgule
+// Ps =>* tInt tID tVirgule tInt tID tVirgule
+// Ps => P Ps => P P Ps ...
+
+Body : tAO Instructions tAF ;
+
+Instructions : Instruction Instructions | ;
+
+Instruction : Aff | If | While | Return | Decl | Invocation tPV ;
+
+Aff : tID tEQ E tPV ;
+
+E : tNB | tID | E tADD E | E tMUL E | E tMINUS E | E tDIV E | Invocation | tPO E tPF | tMINUS E ;
+
+// E : tID tADD tID | ...
+
+If : tIF tPO Cond tPF Body ;
+
+Cond : Cond tAND Cond | Cond tOR Cond | E tEQ2 E | E tINF E | tNOT Cond ;
+
+Invocation : tID tPO  Args  tPF ;
+
+Args : .... cf params
+
+Return : tRET E tPV ;
+
+
+
+
+
+
