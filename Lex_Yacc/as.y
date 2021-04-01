@@ -7,8 +7,13 @@
 #include <stdio.h> 
 #include <string.h>
 #include <stdlib.h>
+#define TAILLE 1024
 
 int addr = 0;
+
+enum type_t type_courant;
+int * tab_instruc = malloc(sizeof(int)*TAILLE);
+int index_instruc = 0;
 
 %}
 
@@ -46,7 +51,7 @@ Main : tINT tMAIN tOBRACE Params tCBRACE Body { print(pile);  printf("addr = %d\
 
 Params : { printf("Sans Params\n"); } ;
 Params : Param SuiteParams ;
-Param : tINT tID { printf("Prametre : %s\n", $2); };
+Param : DeclType tID { printf("Prametre : %s\n", $2); };
 SuiteParams : tCOMA Param SuiteParams ;
 SuiteParams : ;
 
@@ -100,43 +105,18 @@ E : tNOT E { printf("!\n"); };
 
 
 //Créer un champ isConst dans la table des symboles
-Decl : tCONST tINT tID SuiteDeclConst { int init = ($3 != -1); 
- if (init){
-    int val = *$2;
-    printf("AFC %ld %d",addr,val);
- }
-struct symbole_t symbole = {$2, addr, INT, init};
-push(symbole, pile); 
-addr++;} ;
-SuiteDeclConst : tCOMA tID SuiteDecl { $$=$3; int init = ($3 != -1); 
- if (init){
-    int val = *$2;
-    printf("AFC %ld %d",addr,val);
- }
-struct symbole_t symbole = {$2, addr, INT, init}; push(symbole, pile); addr++;};
-SuiteDeclConst : tEQ E tPV { $$=$2; };
-SuiteDeclConst : tPV { $$=$2; };
+Decl : tCONST DeclType SuiteDeclConst { } ;
+SuiteDeclConst : tCOMA tID SuiteDeclConst ;
+SuiteDeclConst : tEQ E tPV { };
+SuiteDeclConst : tPV { };
 
-Decl : tINT tID SuiteDecl { int init = ($3 != -1);
- if (init){
-    int val = *$2;
-    printf("AFC %ld %d",addr,val);
- }
- struct symbole_t symbole = {$2, addr, INT, init}; 
-push(symbole, pile); 
-addr++;} ;
-SuiteDecl : tCOMA tID SuiteDecl
- { $$=$3; 
- int init = ($3 != -1);
- if (init){
-    int val = *$2;
-    printf("AFC %ld %d",addr,val);
- }
- struct symbole_t symbole = {$2, addr, INT, init};
- push(symbole, pile); 
- addr++;};
-SuiteDecl : tEQ E tPV { $$=$2;};
-SuiteDecl : tPV { $$=$2; };
+
+DeclType : tINT {type_courant = INT;} ;
+Decl : DeclType Decl SuiteDecl { } ;
+Decl : tID {push($1, 0, type_courant);};
+Decl : tID tEQ E {push($1,1, type_courant);} ;
+SuiteDecl : tCOMA Decl SuiteDecl { };
+SuiteDecl : tPV { };
 
 Invocation : tPRINTF tOBRACE  tID tCBRACE { printf("Appel de printf sur %s\n", $3); } ;
 

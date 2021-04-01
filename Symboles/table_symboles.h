@@ -28,17 +28,21 @@ Opérations possible :
 #include <stdint.h>
 
 enum type_t {UNKNOWN, INT};
+int taille_types[] = {-1, 4};
+
+char * tab_instructions[2] = {"ADD %d %d", "SUB %d %d"}
 
 struct symbole_t {
 	char nom[30];
 	uintptr_t adresse;
 	enum type_t type;
 	char initialized;
+    int profondeur;
 };
 
 void print_symbole(struct symbole_t symbole);
 
-struct pile_t * pile;
+int profondeur = 0;
 
 void init(void);
 void push(struct symbole_t symbole, struct pile_t * pile);
