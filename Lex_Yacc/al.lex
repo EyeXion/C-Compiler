@@ -1,6 +1,13 @@
 %{
 #include "as.tab.h"
 int yywrap(void){return 1;}
+void
+yyerror (char const *s)
+{
+
+  fprintf (stderr, "%s\n", s);
+}
+
 %}
 
 %%

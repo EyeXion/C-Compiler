@@ -7,13 +7,10 @@
 #include <stdio.h> 
 #include <string.h>
 #include <stdlib.h>
+#include "../Symboles/tab_instruc.h"
 #define TAILLE 1024
 
-int addr = 0;
-
 enum type_t type_courant;
-int * tab_instruc = malloc(sizeof(int)*TAILLE);
-int index_instruc = 0;
 
 %}
 
@@ -22,7 +19,7 @@ int index_instruc = 0;
 %token tOBRACE tCBRACE
 %token tINT
 %token tCONST
-%token tPV tCOMA#include <string.h>
+%token tPV tCOMA
 %token tMUL tDIV tADD tSUB tEQ
 %token<nombre> tNB tNBEXP
 %token<id> tID
@@ -39,6 +36,8 @@ int index_instruc = 0;
 %left tADD tSUB
 %left tMUL tDIV
 
+%type<nombre> E Invocation
+
 
 
 //%type<nombre> E
@@ -47,7 +46,7 @@ int index_instruc = 0;
 
 %%
 
-Main : tINT tMAIN tOBRACE Params tCBRACE Body { print(pile);  printf("addr = %d\n",addr);} ; 
+Main : tINT tMAIN tOBRACE Params tCBRACE Body { print(); create_asm();} ; 
 
 Params : { printf("Sans Params\n"); } ;
 Params : Param SuiteParams ;
@@ -55,16 +54,16 @@ Param : DeclType tID { printf("Prametre : %s\n", $2); };
 SuiteParams : tCOMA Param SuiteParams ;
 SuiteParams : ;
 
-Body : tOBRACKET Instructions tCBRACKET { struct symbole_t symbole = {"Salut", 0x77b58af, INT, 1}; push(symbole, pile); } ;
+Body : tOBRACKET Instructions tCBRACKET { } ;
 
 
 Instructions : Instruction Instructions ;
 Instructions : ;
-Instruction : Aff ;
-Instruction : Decl ;
-Instruction : Invocation tPV ;
-Instruction : If;
-Instruction : While;
+Instruction : Aff {reset_temp_vars();};
+Instruction : Decl {reset_temp_vars();};
+Instruction : Invocation tPV{reset_temp_vars();};
+Instruction : If {reset_temp_vars();};
+Instruction : While {reset_temp_vars();};
 
 
 If : tIF tOBRACE Cond tCBRACE Body Else { printf("If reconnu\n"); };
@@ -81,44 +80,57 @@ SuiteCond : tOR E SuiteCond;
 
 Aff : tID tEQ E tPV { printf("%s prend une valeur\n", $1);} ; //besoin de get_address
 
-E : tNB { printf("Nombre\n"); 
- struct symbole_t symbole = ("", addr, INT, 1};
- push(symbole, pile); 
-$$=addr;
-  addr++;
- printf("AFC %d %d",addr,$1); } ;
+E : tNB { int addr = allocate_mem_temp_var(INT); add_operation(AFC, addr,$1,0); $$ = addr;};
 
-E : tNBEXP { printf("Nombre exp\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("AFC %d %d",addr,$1); };
+E : tNBEXP { printf("Nombre exp\n"); int addr = allocate_mem_temp_var(INT); add_operation(AFC, addr,$1,0); $$ = addr;};
 E : tID { printf("Id\n"); /*Faire un get_address sur la pile*/};
-E : E tMUL E { printf("Mul\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("MUL %d %d %d",addr, $1,$2);};
-E : E tDIV E { printf("Div\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("DIV %d %d %d",addr, $1,$2);};
-E : E tSUB E { printf("Sub\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("SOU %d %d %d",addr, $1,$2);};
-E : E tADD E { printf("Add\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("ADD %d %d %d",addr, $1,$2);}};
-E : Invocation { printf("Invoc\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("AFC %d %d",addr, $1);};
-E : tOBRACE E tCBRACE { printf("Parentheses\n"); $$=$2};
-E : tSUB E { printf("Moins\n"); printf("SUB %d 0 %d",addr,$2);};
-E : E tEQCOND E { printf("==\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("EQU %d %d %d",addr, $1,$3);};
-E : E tGT E { printf(">\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("SUP %d %d %d",addr, $1,$3);};
-E : E tLT E { printf("<\n"); struct symbole_t symbole = {"", addr, INT, 1}; push(symbole, pile); $$=addr;  addr++; printf("SUP %d %d %d",addr, $1,$3);};
+E : E tMUL E { printf("Mul\n"); int addr = allocate_mem_temp_var(INT); add_operation(MUL, addr,$1,$2); $$ = addr;};
+E : E tDIV E { printf("Div\n"); int addr = allocate_mem_temp_var(INT); add_operation(DIV, addr,$1,$2); $$ = addr;};
+E : E tSUB E { printf("Sub\n"); int addr = allocate_mem_temp_var(INT); add_operation(SOU, addr,$1,$2); $$ = addr;};
+E : E tADD E { printf("Add\n"); int addr = allocate_mem_temp_var(INT); add_operation(ADD, addr,$1,$2); $$ = addr;};
+E : Invocation { printf("Invoc\n"); int addr = allocate_mem_temp_var(INT); add_operation(AFC, addr,$1,0); $$ = addr;};
+E : tOBRACE E tCBRACE { printf("Parentheses\n"); $$=$2;};
+E : tSUB E { printf("Moins\n"); int addr = allocate_mem_temp_var(INT); add_operation(SOU, 0,addr,0); $$ = addr;};
+E : E tEQCOND E { printf("==\n"); int addr = allocate_mem_temp_var(INT); add_operation(EQU, addr,$1,$3); $$ = addr;};
+E : E tGT E { printf(">\n"); int addr = allocate_mem_temp_var(INT); add_operation(SUP, addr,$1,$3); $$ = addr;};
+E : E tLT E { printf("<\n"); int addr = allocate_mem_temp_var(INT); add_operation(INF, addr,$1,$3); $$ = addr;};
 E : tNOT E { printf("!\n"); };
 
 
 
 //Créer un champ isConst dans la table des symboles
+DeclType : tINT {type_courant = INT; printf("Type int\n");} ;
+
+Decl : DeclType SuiteDecl FinDecl ;
+Decl : tCONST DeclType SuiteDeclConst FinDeclConst;
+
+SuiteDecl : tID {push($1, 0, type_courant); printf("Suite Decl\n");};
+SuiteDecl : tID tEQ E {int addr = push($1,1, type_courant); add_operation(AFC, addr,$3,0);};
+FinDecl : tPV { printf("Fin Decl\n");};
+FinDecl : tCOMA SuiteDecl FinDecl ;
+
+SuiteDeclConst : tID tEQ E {int addr = push($1,1, type_courant); add_operation(AFC, addr,$3,0);};
+FinDeclConst : tPV;
+FinDeclConst : tCOMA SuiteDeclConst FinDeclConst;
+
+
+/* //Créer un champ isConst dans la table des symboles
+DeclType : tINT {type_courant = INT; printf("Type int\n");} ;
+
 Decl : tCONST DeclType SuiteDeclConst { } ;
 SuiteDeclConst : tCOMA tID SuiteDeclConst ;
 SuiteDeclConst : tEQ E tPV { };
 SuiteDeclConst : tPV { };
 
 
-DeclType : tINT {type_courant = INT;} ;
 Decl : DeclType Decl SuiteDecl { } ;
 Decl : tID {push($1, 0, type_courant);};
-Decl : tID tEQ E {push($1,1, type_courant);} ;
+Decl : tID tEQ E {int addr = push($1,1, type_courant); add_operation(AFC, addr,$3,0);} ;
 SuiteDecl : tCOMA Decl SuiteDecl { };
 SuiteDecl : tPV { };
+*/
 
-Invocation : tPRINTF tOBRACE  tID tCBRACE { printf("Appel de printf sur %s\n", $3); } ;
+Invocation : tPRINTF tOBRACE tID tCBRACE { printf("Appel de printf sur %s\n", $3); } ;
 
 /*S : E tPV
 						{ printf("RES: %d\n", $1); }

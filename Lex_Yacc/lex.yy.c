@@ -483,8 +483,15 @@ char *yytext;
 #line 2 "al.lex"
 #include "as.tab.h"
 int yywrap(void){return 1;}
-#line 487 "lex.yy.c"
-#line 488 "lex.yy.c"
+void
+yyerror (char const *s)
+{
+
+  fprintf (stderr, "%s\n", s);
+}
+
+#line 494 "lex.yy.c"
+#line 495 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -701,10 +708,10 @@ YY_DECL
 		}
 
 	{
-#line 6 "al.lex"
+#line 13 "al.lex"
 
 
-#line 708 "lex.yy.c"
+#line 715 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -763,161 +770,161 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 8 "al.lex"
+#line 15 "al.lex"
 { return tMAIN ;} 
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 9 "al.lex"
+#line 16 "al.lex"
 { return tOBRACKET;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 10 "al.lex"
+#line 17 "al.lex"
 { return tCBRACKET; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 11 "al.lex"
+#line 18 "al.lex"
 { return tOBRACE; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 12 "al.lex"
+#line 19 "al.lex"
 { return tCBRACE; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 13 "al.lex"
+#line 20 "al.lex"
 { return tCONST; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 14 "al.lex"
+#line 21 "al.lex"
 { return tINT; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 15 "al.lex"
+#line 22 "al.lex"
 { return tPRINTF; } //Degeu mais à degager
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 16 "al.lex"
+#line 23 "al.lex"
 { return tIF; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 17 "al.lex"
+#line 24 "al.lex"
 { return tWHILE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 18 "al.lex"
+#line 25 "al.lex"
 { return tLT; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 19 "al.lex"
+#line 26 "al.lex"
 { return tGT; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 20 "al.lex"
+#line 27 "al.lex"
 { return tEQCOND; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 21 "al.lex"
+#line 28 "al.lex"
 { return tAND; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 22 "al.lex"
+#line 29 "al.lex"
 { return tOR; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 23 "al.lex"
+#line 30 "al.lex"
 { return tELSE;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 26 "al.lex"
+#line 33 "al.lex"
 { yylval.nombre = atoi(yytext); return tNB; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 27 "al.lex"
+#line 34 "al.lex"
 { yylval.nombre = -1; return tNBEXP; } //Renvoyer le token tNB et pas tNBEXP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 28 "al.lex"
+#line 35 "al.lex"
 { return tADD; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 29 "al.lex"
+#line 36 "al.lex"
 { return tSUB; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 30 "al.lex"
+#line 37 "al.lex"
 { return tMUL; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 31 "al.lex"
+#line 38 "al.lex"
 { return tDIV; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 32 "al.lex"
+#line 39 "al.lex"
 { return tEQ; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 33 "al.lex"
+#line 40 "al.lex"
 { return tPV; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 34 "al.lex"
+#line 41 "al.lex"
 {} //Ne pas les retourner à Yacc
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 35 "al.lex"
+#line 42 "al.lex"
 {} //Ne pas les retourner à Yacc
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 36 "al.lex"
+#line 43 "al.lex"
 { return tCOMA; }
 	YY_BREAK
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
-#line 37 "al.lex"
+#line 44 "al.lex"
 {} //Ne pas les retourner à Yacc
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 38 "al.lex"
+#line 45 "al.lex"
 { strcpy(yylval.id, yytext); return tID; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 39 "al.lex"
+#line 46 "al.lex"
 { return tERROR; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 41 "al.lex"
+#line 48 "al.lex"
 ECHO;
 	YY_BREAK
-#line 921 "lex.yy.c"
+#line 928 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1922,7 +1929,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 41 "al.lex"
+#line 48 "al.lex"
 
 
 

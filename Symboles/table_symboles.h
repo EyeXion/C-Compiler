@@ -28,9 +28,8 @@ Opérations possible :
 #include <stdint.h>
 
 enum type_t {UNKNOWN, INT};
-int taille_types[] = {-1, 4};
-
-char * tab_instructions[2] = {"ADD %d %d", "SUB %d %d"}
+extern int taille_types[];
+extern int profondeur;
 
 struct symbole_t {
 	char nom[30];
@@ -42,11 +41,14 @@ struct symbole_t {
 
 void print_symbole(struct symbole_t symbole);
 
-int profondeur = 0;
 
 void init(void);
-void push(struct symbole_t symbole, struct pile_t * pile);
-struct symbole_t pop(struct pile_t * pile);
+int push(char * nom, int isInit, enum type_t type);
+struct symbole_t pop();
 // renvoi 0 si nom n'existe pas, 2 si nom existe sans etre initialisée, 1 sinon
-char status(char * nom, struct pile_t * pile);
-void print(struct pile_t * pile);
+char status(char * nom);
+void print();
+int get_last_addr();
+struct symbole_t * get_variable(char * nom);
+int allocate_mem_temp_var(enum type_t type);
+void reset_temp_vars();

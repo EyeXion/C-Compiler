@@ -1,6 +1,6 @@
 Terminaux inutilisés dans la grammaire
 
-   tERROR
+    tERROR
 
 
 Grammaire
@@ -12,7 +12,7 @@ Grammaire
     2 Params: %empty
     3       | Param SuiteParams
 
-    4 Param: tINT tID
+    4 Param: DeclType tID
 
     5 SuiteParams: tCOMA Param SuiteParams
     6            | %empty
@@ -59,93 +59,126 @@ Grammaire
    37  | E tLT E
    38  | tNOT E
 
-   39 Decl: tINT tID SuiteDecl FinDeclaration
-   40     | tCONST tINT tID SuiteDecl tEQ E tPV
+   39 DeclType: tINT
 
-   41 SuiteDecl: tCOMA tID SuiteDecl
-   42          | %empty
+   40 Decl: DeclType SuiteDecl FinDecl
+   41     | tCONST DeclType SuiteDeclConst FinDeclConst
 
-   43 FinDeclaration: tEQ E tPV
-   44               | tPV
+   42 SuiteDecl: tID
+   43          | tID tEQ E
 
-   45 Invocation: tPRINTF tOBRACE tID tCBRACE
+   44 FinDecl: tPV
+   45        | tCOMA SuiteDecl FinDecl
+
+   46 SuiteDeclConst: tID tEQ E
+
+   47 FinDeclConst: tPV
+   48             | tCOMA SuiteDeclConst FinDeclConst
+
+   49 Invocation: tPRINTF tOBRACE tID tCBRACE
 
 
 Terminaux, suivis des règles où ils apparaissent
 
-$end (0) 0
-error (256)
-tMAIN (258) 1
-tOBRACKET (259) 7
-tCBRACKET (260) 7
-tOBRACE (261) 1 15 19 33 45
-tCBRACE (262) 1 15 19 33 45
-tINT (263) 1 4 39 40
-tCONST (264) 40
-tPV (265) 12 24 40 43 44
-tCOMA (266) 5 41
-tMUL (267) 28
-tDIV (268) 29
-tADD (269) 31
-tSUB (270) 30 34
-tEQ (271) 24 40 43
-tNB (272) 25
-tNBEXP (273) 26
-tID (274) 4 24 27 39 40 41 45
-tPRINTF (275) 45
-tERROR (276)
-tIF (277) 15
-tWHILE (278) 19
-tELSE (279) 16 17
-tLT (280) 37
-tGT (281) 36
-tEQCOND (282) 35
-tAND (283) 22
-tOR (284) 23
-tNOT (285) 38
+    $end (0) 0
+    error (256)
+    tMAIN (258) 1
+    tOBRACKET (259) 7
+    tCBRACKET (260) 7
+    tOBRACE (261) 1 15 19 33 49
+    tCBRACE (262) 1 15 19 33 49
+    tINT <nombre> (263) 1 39
+    tCONST <nombre> (264) 41
+    tPV (265) 12 24 44 47
+    tCOMA (266) 5 45 48
+    tMUL <nombre> (267) 28
+    tDIV <nombre> (268) 29
+    tADD <nombre> (269) 31
+    tSUB <nombre> (270) 30 34
+    tEQ <nombre> (271) 24 43 46
+    tNB <nombre> (272) 25
+    tNBEXP <nombre> (273) 26
+    tID <id> (274) 4 24 27 42 43 46 49
+    tPRINTF (275) 49
+    tERROR (276)
+    tIF (277) 15
+    tWHILE (278) 19
+    tELSE (279) 16 17
+    tLT <nombre> (280) 37
+    tGT <nombre> (281) 36
+    tEQCOND <nombre> (282) 35
+    tAND <nombre> (283) 22
+    tOR <nombre> (284) 23
+    tNOT (285) 38
 
 
 Non-terminaux, suivis des règles où ils apparaissent
 
-$accept (31)
-    à gauche: 0
-Main (32)
-    à gauche: 1, à droite: 0
-Params (33)
-    à gauche: 2 3, à droite: 1
-Param (34)
-    à gauche: 4, à droite: 3 5
-SuiteParams (35)
-    à gauche: 5 6, à droite: 3 5
-Body (36)
-    à gauche: 7, à droite: 1 15 17 19
-Instructions (37)
-    à gauche: 8 9, à droite: 7 8
-Instruction (38)
-    à gauche: 10 11 12 13 14, à droite: 8
-If (39)
-    à gauche: 15, à droite: 13 16
-Else (40)
-    à gauche: 16 17 18, à droite: 15
-While (41)
-    à gauche: 19, à droite: 14
-Cond (42)
-    à gauche: 20, à droite: 15 19
-SuiteCond (43)
-    à gauche: 21 22 23, à droite: 20 22 23
-Aff (44)
-    à gauche: 24, à droite: 10
-E (45)
-    à gauche: 25 26 27 28 29 30 31 32 33 34 35 36 37 38, à droite:
-    20 22 23 24 28 29 30 31 33 34 35 36 37 38 40 43
-Decl (46)
-    à gauche: 39 40, à droite: 11
-SuiteDecl (47)
-    à gauche: 41 42, à droite: 39 40 41
-FinDeclaration (48)
-    à gauche: 43 44, à droite: 39
-Invocation (49)
-    à gauche: 45, à droite: 12 32
+    $accept (31)
+        à gauche: 0
+    Main (32)
+        à gauche: 1
+        à droite: 0
+    Params (33)
+        à gauche: 2 3
+        à droite: 1
+    Param (34)
+        à gauche: 4
+        à droite: 3 5
+    SuiteParams (35)
+        à gauche: 5 6
+        à droite: 3 5
+    Body (36)
+        à gauche: 7
+        à droite: 1 15 17 19
+    Instructions (37)
+        à gauche: 8 9
+        à droite: 7 8
+    Instruction (38)
+        à gauche: 10 11 12 13 14
+        à droite: 8
+    If (39)
+        à gauche: 15
+        à droite: 13 16
+    Else (40)
+        à gauche: 16 17 18
+        à droite: 15
+    While (41)
+        à gauche: 19
+        à droite: 14
+    Cond (42)
+        à gauche: 20
+        à droite: 15 19
+    SuiteCond (43)
+        à gauche: 21 22 23
+        à droite: 20 22 23
+    Aff (44)
+        à gauche: 24
+        à droite: 10
+    E <nombre> (45)
+        à gauche: 25 26 27 28 29 30 31 32 33 34 35 36 37 38
+        à droite: 20 22 23 24 28 29 30 31 33 34 35 36 37 38 43 46
+    DeclType (46)
+        à gauche: 39
+        à droite: 4 40 41
+    Decl (47)
+        à gauche: 40 41
+        à droite: 11
+    SuiteDecl (48)
+        à gauche: 42 43
+        à droite: 40 45
+    FinDecl (49)
+        à gauche: 44 45
+        à droite: 40 45
+    SuiteDeclConst (50)
+        à gauche: 46
+        à droite: 41 48
+    FinDeclConst (51)
+        à gauche: 47 48
+        à droite: 41 48
+    Invocation <nombre> (52)
+        à gauche: 49
+        à droite: 12 32
 
 
 État 0
@@ -193,15 +226,16 @@ Invocation (49)
 
     $défaut  réduction par utilisation de la règle 2 (Params)
 
-    Params  aller à l'état 7
-    Param   aller à l'état 8
+    Params    aller à l'état 7
+    Param     aller à l'état 8
+    DeclType  aller à l'état 9
 
 
 État 6
 
-    4 Param: tINT . tID
+   39 DeclType: tINT .
 
-    tID  décalage et aller à l'état 9
+    $défaut  réduction par utilisation de la règle 39 (DeclType)
 
 
 État 7
@@ -224,18 +258,18 @@ Invocation (49)
 
 État 9
 
-    4 Param: tINT tID .
+    4 Param: DeclType . tID
 
-    $défaut  réduction par utilisation de la règle 4 (Param)
+    tID  décalage et aller à l'état 13
 
 
 État 10
 
     1 Main: tINT tMAIN tOBRACE Params tCBRACE . Body
 
-    tOBRACKET  décalage et aller à l'état 13
+    tOBRACKET  décalage et aller à l'état 14
 
-    Body  aller à l'état 14
+    Body  aller à l'état 15
 
 
 État 11
@@ -244,7 +278,8 @@ Invocation (49)
 
     tINT  décalage et aller à l'état 6
 
-    Param  aller à l'état 15
+    Param     aller à l'état 16
+    DeclType  aller à l'état 9
 
 
 État 12
@@ -256,9 +291,16 @@ Invocation (49)
 
 État 13
 
+    4 Param: DeclType tID .
+
+    $défaut  réduction par utilisation de la règle 4 (Param)
+
+
+État 14
+
     7 Body: tOBRACKET . Instructions tCBRACKET
 
-    tINT     décalage et aller à l'état 16
+    tINT     décalage et aller à l'état 6
     tCONST   décalage et aller à l'état 17
     tID      décalage et aller à l'état 18
     tPRINTF  décalage et aller à l'état 19
@@ -272,18 +314,19 @@ Invocation (49)
     If            aller à l'état 24
     While         aller à l'état 25
     Aff           aller à l'état 26
-    Decl          aller à l'état 27
-    Invocation    aller à l'état 28
+    DeclType      aller à l'état 27
+    Decl          aller à l'état 28
+    Invocation    aller à l'état 29
 
 
-État 14
+État 15
 
     1 Main: tINT tMAIN tOBRACE Params tCBRACE Body .
 
     $défaut  réduction par utilisation de la règle 1 (Main)
 
 
-État 15
+État 16
 
     5 SuiteParams: tCOMA Param . SuiteParams
 
@@ -291,21 +334,16 @@ Invocation (49)
 
     $défaut  réduction par utilisation de la règle 6 (SuiteParams)
 
-    SuiteParams  aller à l'état 29
-
-
-État 16
-
-   39 Decl: tINT . tID SuiteDecl FinDeclaration
-
-    tID  décalage et aller à l'état 30
+    SuiteParams  aller à l'état 30
 
 
 État 17
 
-   40 Decl: tCONST . tINT tID SuiteDecl tEQ E tPV
+   41 Decl: tCONST . DeclType SuiteDeclConst FinDeclConst
 
-    tINT  décalage et aller à l'état 31
+    tINT  décalage et aller à l'état 6
+
+    DeclType  aller à l'état 31
 
 
 État 18
@@ -317,7 +355,7 @@ Invocation (49)
 
 État 19
 
-   45 Invocation: tPRINTF . tOBRACE tID tCBRACE
+   49 Invocation: tPRINTF . tOBRACE tID tCBRACE
 
     tOBRACE  décalage et aller à l'état 33
 
@@ -347,7 +385,7 @@ Invocation (49)
 
     8 Instructions: Instruction . Instructions
 
-    tINT     décalage et aller à l'état 16
+    tINT     décalage et aller à l'état 6
     tCONST   décalage et aller à l'état 17
     tID      décalage et aller à l'état 18
     tPRINTF  décalage et aller à l'état 19
@@ -361,8 +399,9 @@ Invocation (49)
     If            aller à l'état 24
     While         aller à l'état 25
     Aff           aller à l'état 26
-    Decl          aller à l'état 27
-    Invocation    aller à l'état 28
+    DeclType      aller à l'état 27
+    Decl          aller à l'état 28
+    Invocation    aller à l'état 29
 
 
 État 24
@@ -388,98 +427,98 @@ Invocation (49)
 
 État 27
 
+   40 Decl: DeclType . SuiteDecl FinDecl
+
+    tID  décalage et aller à l'état 38
+
+    SuiteDecl  aller à l'état 39
+
+
+État 28
+
    11 Instruction: Decl .
 
     $défaut  réduction par utilisation de la règle 11 (Instruction)
 
 
-État 28
+État 29
 
    12 Instruction: Invocation . tPV
 
-    tPV  décalage et aller à l'état 38
+    tPV  décalage et aller à l'état 40
 
 
-État 29
+État 30
 
     5 SuiteParams: tCOMA Param SuiteParams .
 
     $défaut  réduction par utilisation de la règle 5 (SuiteParams)
 
 
-État 30
-
-   39 Decl: tINT tID . SuiteDecl FinDeclaration
-
-    tCOMA  décalage et aller à l'état 39
-
-    $défaut  réduction par utilisation de la règle 42 (SuiteDecl)
-
-    SuiteDecl  aller à l'état 40
-
-
 État 31
 
-   40 Decl: tCONST tINT . tID SuiteDecl tEQ E tPV
+   41 Decl: tCONST DeclType . SuiteDeclConst FinDeclConst
 
     tID  décalage et aller à l'état 41
+
+    SuiteDeclConst  aller à l'état 42
 
 
 État 32
 
    24 Aff: tID tEQ . E tPV
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    E           aller à l'état 48
-    Invocation  aller à l'état 49
+    E           aller à l'état 49
+    Invocation  aller à l'état 50
 
 
 État 33
 
-   45 Invocation: tPRINTF tOBRACE . tID tCBRACE
+   49 Invocation: tPRINTF tOBRACE . tID tCBRACE
 
-    tID  décalage et aller à l'état 50
+    tID  décalage et aller à l'état 51
 
 
 État 34
 
    15 If: tIF tOBRACE . Cond tCBRACE Body Else
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    Cond        aller à l'état 51
-    E           aller à l'état 52
-    Invocation  aller à l'état 49
+    Cond        aller à l'état 52
+    E           aller à l'état 53
+    Invocation  aller à l'état 50
 
 
 État 35
 
    19 While: tWHILE tOBRACE . Cond tCBRACE Body
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    Cond        aller à l'état 53
-    E           aller à l'état 52
-    Invocation  aller à l'état 49
+    Cond        aller à l'état 54
+    E           aller à l'état 53
+    Invocation  aller à l'état 50
 
 
 État 36
@@ -498,109 +537,118 @@ Invocation (49)
 
 État 38
 
+   42 SuiteDecl: tID .
+   43          | tID . tEQ E
+
+    tEQ  décalage et aller à l'état 55
+
+    $défaut  réduction par utilisation de la règle 42 (SuiteDecl)
+
+
+État 39
+
+   40 Decl: DeclType SuiteDecl . FinDecl
+
+    tPV    décalage et aller à l'état 56
+    tCOMA  décalage et aller à l'état 57
+
+    FinDecl  aller à l'état 58
+
+
+État 40
+
    12 Instruction: Invocation tPV .
 
     $défaut  réduction par utilisation de la règle 12 (Instruction)
 
 
-État 39
-
-   41 SuiteDecl: tCOMA . tID SuiteDecl
-
-    tID  décalage et aller à l'état 54
-
-
-État 40
-
-   39 Decl: tINT tID SuiteDecl . FinDeclaration
-
-    tPV  décalage et aller à l'état 55
-    tEQ  décalage et aller à l'état 56
-
-    FinDeclaration  aller à l'état 57
-
-
 État 41
 
-   40 Decl: tCONST tINT tID . SuiteDecl tEQ E tPV
+   46 SuiteDeclConst: tID . tEQ E
 
-    tCOMA  décalage et aller à l'état 39
-
-    $défaut  réduction par utilisation de la règle 42 (SuiteDecl)
-
-    SuiteDecl  aller à l'état 58
+    tEQ  décalage et aller à l'état 59
 
 
 État 42
 
-   33 E: tOBRACE . E tCBRACE
+   41 Decl: tCONST DeclType SuiteDeclConst . FinDeclConst
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
-    tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tPV    décalage et aller à l'état 60
+    tCOMA  décalage et aller à l'état 61
 
-    E           aller à l'état 59
-    Invocation  aller à l'état 49
+    FinDeclConst  aller à l'état 62
 
 
 État 43
 
-   34 E: tSUB . E
+   33 E: tOBRACE . E tCBRACE
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    E           aller à l'état 60
-    Invocation  aller à l'état 49
+    E           aller à l'état 63
+    Invocation  aller à l'état 50
 
 
 État 44
+
+   34 E: tSUB . E
+
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
+    tPRINTF  décalage et aller à l'état 19
+    tNOT     décalage et aller à l'état 48
+
+    E           aller à l'état 64
+    Invocation  aller à l'état 50
+
+
+État 45
 
    25 E: tNB .
 
     $défaut  réduction par utilisation de la règle 25 (E)
 
 
-État 45
+État 46
 
    26 E: tNBEXP .
 
     $défaut  réduction par utilisation de la règle 26 (E)
 
 
-État 46
+État 47
 
    27 E: tID .
 
     $défaut  réduction par utilisation de la règle 27 (E)
 
 
-État 47
+État 48
 
    38 E: tNOT . E
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    E           aller à l'état 61
-    Invocation  aller à l'état 49
+    E           aller à l'état 65
+    Invocation  aller à l'état 50
 
 
-État 48
+État 49
 
    24 Aff: tID tEQ E . tPV
    28 E: E . tMUL E
@@ -611,38 +659,38 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tPV      décalage et aller à l'état 62
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tLT      décalage et aller à l'état 67
-    tGT      décalage et aller à l'état 68
-    tEQCOND  décalage et aller à l'état 69
+    tPV      décalage et aller à l'état 66
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tLT      décalage et aller à l'état 71
+    tGT      décalage et aller à l'état 72
+    tEQCOND  décalage et aller à l'état 73
 
 
-État 49
+État 50
 
    32 E: Invocation .
 
     $défaut  réduction par utilisation de la règle 32 (E)
 
 
-État 50
-
-   45 Invocation: tPRINTF tOBRACE tID . tCBRACE
-
-    tCBRACE  décalage et aller à l'état 70
-
-
 État 51
 
-   15 If: tIF tOBRACE Cond . tCBRACE Body Else
+   49 Invocation: tPRINTF tOBRACE tID . tCBRACE
 
-    tCBRACE  décalage et aller à l'état 71
+    tCBRACE  décalage et aller à l'état 74
 
 
 État 52
+
+   15 If: tIF tOBRACE Cond . tCBRACE Body Else
+
+    tCBRACE  décalage et aller à l'état 75
+
+
+État 53
 
    20 Cond: E . SuiteCond
    28 E: E . tMUL E
@@ -653,77 +701,107 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tLT      décalage et aller à l'état 67
-    tGT      décalage et aller à l'état 68
-    tEQCOND  décalage et aller à l'état 69
-    tAND     décalage et aller à l'état 72
-    tOR      décalage et aller à l'état 73
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tLT      décalage et aller à l'état 71
+    tGT      décalage et aller à l'état 72
+    tEQCOND  décalage et aller à l'état 73
+    tAND     décalage et aller à l'état 76
+    tOR      décalage et aller à l'état 77
 
     $défaut  réduction par utilisation de la règle 21 (SuiteCond)
 
-    SuiteCond  aller à l'état 74
-
-
-État 53
-
-   19 While: tWHILE tOBRACE Cond . tCBRACE Body
-
-    tCBRACE  décalage et aller à l'état 75
+    SuiteCond  aller à l'état 78
 
 
 État 54
 
-   41 SuiteDecl: tCOMA tID . SuiteDecl
+   19 While: tWHILE tOBRACE Cond . tCBRACE Body
 
-    tCOMA  décalage et aller à l'état 39
-
-    $défaut  réduction par utilisation de la règle 42 (SuiteDecl)
-
-    SuiteDecl  aller à l'état 76
+    tCBRACE  décalage et aller à l'état 79
 
 
 État 55
 
-   44 FinDeclaration: tPV .
+   43 SuiteDecl: tID tEQ . E
 
-    $défaut  réduction par utilisation de la règle 44 (FinDeclaration)
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
+    tPRINTF  décalage et aller à l'état 19
+    tNOT     décalage et aller à l'état 48
+
+    E           aller à l'état 80
+    Invocation  aller à l'état 50
 
 
 État 56
 
-   43 FinDeclaration: tEQ . E tPV
+   44 FinDecl: tPV .
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
-    tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
-
-    E           aller à l'état 77
-    Invocation  aller à l'état 49
+    $défaut  réduction par utilisation de la règle 44 (FinDecl)
 
 
 État 57
 
-   39 Decl: tINT tID SuiteDecl FinDeclaration .
+   45 FinDecl: tCOMA . SuiteDecl FinDecl
 
-    $défaut  réduction par utilisation de la règle 39 (Decl)
+    tID  décalage et aller à l'état 38
+
+    SuiteDecl  aller à l'état 81
 
 
 État 58
 
-   40 Decl: tCONST tINT tID SuiteDecl . tEQ E tPV
+   40 Decl: DeclType SuiteDecl FinDecl .
 
-    tEQ  décalage et aller à l'état 78
+    $défaut  réduction par utilisation de la règle 40 (Decl)
 
 
 État 59
+
+   46 SuiteDeclConst: tID tEQ . E
+
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
+    tPRINTF  décalage et aller à l'état 19
+    tNOT     décalage et aller à l'état 48
+
+    E           aller à l'état 82
+    Invocation  aller à l'état 50
+
+
+État 60
+
+   47 FinDeclConst: tPV .
+
+    $défaut  réduction par utilisation de la règle 47 (FinDeclConst)
+
+
+État 61
+
+   48 FinDeclConst: tCOMA . SuiteDeclConst FinDeclConst
+
+    tID  décalage et aller à l'état 41
+
+    SuiteDeclConst  aller à l'état 83
+
+
+État 62
+
+   41 Decl: tCONST DeclType SuiteDeclConst FinDeclConst .
+
+    $défaut  réduction par utilisation de la règle 41 (Decl)
+
+
+État 63
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -734,17 +812,17 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tCBRACE  décalage et aller à l'état 79
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tLT      décalage et aller à l'état 67
-    tGT      décalage et aller à l'état 68
-    tEQCOND  décalage et aller à l'état 69
+    tCBRACE  décalage et aller à l'état 84
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tLT      décalage et aller à l'état 71
+    tGT      décalage et aller à l'état 72
+    tEQCOND  décalage et aller à l'état 73
 
 
-État 60
+État 64
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -755,13 +833,13 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tMUL  décalage et aller à l'état 63
-    tDIV  décalage et aller à l'état 64
+    tMUL  décalage et aller à l'état 67
+    tDIV  décalage et aller à l'état 68
 
     $défaut  réduction par utilisation de la règle 34 (E)
 
 
-État 61
+État 65
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -772,208 +850,201 @@ Invocation (49)
    37  | E . tLT E
    38  | tNOT E .
 
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tLT      décalage et aller à l'état 67
-    tGT      décalage et aller à l'état 68
-    tEQCOND  décalage et aller à l'état 69
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tLT      décalage et aller à l'état 71
+    tGT      décalage et aller à l'état 72
+    tEQCOND  décalage et aller à l'état 73
 
     $défaut  réduction par utilisation de la règle 38 (E)
 
 
-État 62
+État 66
 
    24 Aff: tID tEQ E tPV .
 
     $défaut  réduction par utilisation de la règle 24 (Aff)
 
 
-État 63
+État 67
 
    28 E: E tMUL . E
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    E           aller à l'état 80
-    Invocation  aller à l'état 49
-
-
-État 64
-
-   29 E: E tDIV . E
-
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
-    tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
-
-    E           aller à l'état 81
-    Invocation  aller à l'état 49
-
-
-État 65
-
-   31 E: E tADD . E
-
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
-    tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
-
-    E           aller à l'état 82
-    Invocation  aller à l'état 49
-
-
-État 66
-
-   30 E: E tSUB . E
-
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
-    tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
-
-    E           aller à l'état 83
-    Invocation  aller à l'état 49
-
-
-État 67
-
-   37 E: E tLT . E
-
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
-    tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
-
-    E           aller à l'état 84
-    Invocation  aller à l'état 49
+    E           aller à l'état 85
+    Invocation  aller à l'état 50
 
 
 État 68
 
-   36 E: E tGT . E
+   29 E: E tDIV . E
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    E           aller à l'état 85
-    Invocation  aller à l'état 49
+    E           aller à l'état 86
+    Invocation  aller à l'état 50
 
 
 État 69
 
-   35 E: E tEQCOND . E
+   31 E: E tADD . E
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    E           aller à l'état 86
-    Invocation  aller à l'état 49
+    E           aller à l'état 87
+    Invocation  aller à l'état 50
 
 
 État 70
 
-   45 Invocation: tPRINTF tOBRACE tID tCBRACE .
+   30 E: E tSUB . E
 
-    $défaut  réduction par utilisation de la règle 45 (Invocation)
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
+    tPRINTF  décalage et aller à l'état 19
+    tNOT     décalage et aller à l'état 48
+
+    E           aller à l'état 88
+    Invocation  aller à l'état 50
 
 
 État 71
 
-   15 If: tIF tOBRACE Cond tCBRACE . Body Else
+   37 E: E tLT . E
 
-    tOBRACKET  décalage et aller à l'état 13
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
+    tPRINTF  décalage et aller à l'état 19
+    tNOT     décalage et aller à l'état 48
 
-    Body  aller à l'état 87
+    E           aller à l'état 89
+    Invocation  aller à l'état 50
 
 
 État 72
 
-   22 SuiteCond: tAND . E SuiteCond
+   36 E: E tGT . E
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    E           aller à l'état 88
-    Invocation  aller à l'état 49
+    E           aller à l'état 90
+    Invocation  aller à l'état 50
 
 
 État 73
 
-   23 SuiteCond: tOR . E SuiteCond
+   35 E: E tEQCOND . E
 
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
     tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
+    tNOT     décalage et aller à l'état 48
 
-    E           aller à l'état 89
-    Invocation  aller à l'état 49
+    E           aller à l'état 91
+    Invocation  aller à l'état 50
 
 
 État 74
+
+   49 Invocation: tPRINTF tOBRACE tID tCBRACE .
+
+    $défaut  réduction par utilisation de la règle 49 (Invocation)
+
+
+État 75
+
+   15 If: tIF tOBRACE Cond tCBRACE . Body Else
+
+    tOBRACKET  décalage et aller à l'état 14
+
+    Body  aller à l'état 92
+
+
+État 76
+
+   22 SuiteCond: tAND . E SuiteCond
+
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
+    tPRINTF  décalage et aller à l'état 19
+    tNOT     décalage et aller à l'état 48
+
+    E           aller à l'état 93
+    Invocation  aller à l'état 50
+
+
+État 77
+
+   23 SuiteCond: tOR . E SuiteCond
+
+    tOBRACE  décalage et aller à l'état 43
+    tSUB     décalage et aller à l'état 44
+    tNB      décalage et aller à l'état 45
+    tNBEXP   décalage et aller à l'état 46
+    tID      décalage et aller à l'état 47
+    tPRINTF  décalage et aller à l'état 19
+    tNOT     décalage et aller à l'état 48
+
+    E           aller à l'état 94
+    Invocation  aller à l'état 50
+
+
+État 78
 
    20 Cond: E SuiteCond .
 
     $défaut  réduction par utilisation de la règle 20 (Cond)
 
 
-État 75
+État 79
 
    19 While: tWHILE tOBRACE Cond tCBRACE . Body
 
-    tOBRACKET  décalage et aller à l'état 13
+    tOBRACKET  décalage et aller à l'état 14
 
-    Body  aller à l'état 90
-
-
-État 76
-
-   41 SuiteDecl: tCOMA tID SuiteDecl .
-
-    $défaut  réduction par utilisation de la règle 41 (SuiteDecl)
+    Body  aller à l'état 95
 
 
-État 77
+État 80
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -982,42 +1053,69 @@ Invocation (49)
    35  | E . tEQCOND E
    36  | E . tGT E
    37  | E . tLT E
-   43 FinDeclaration: tEQ E . tPV
+   43 SuiteDecl: tID tEQ E .
 
-    tPV      décalage et aller à l'état 91
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tLT      décalage et aller à l'état 67
-    tGT      décalage et aller à l'état 68
-    tEQCOND  décalage et aller à l'état 69
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tLT      décalage et aller à l'état 71
+    tGT      décalage et aller à l'état 72
+    tEQCOND  décalage et aller à l'état 73
 
-
-État 78
-
-   40 Decl: tCONST tINT tID SuiteDecl tEQ . E tPV
-
-    tOBRACE  décalage et aller à l'état 42
-    tSUB     décalage et aller à l'état 43
-    tNB      décalage et aller à l'état 44
-    tNBEXP   décalage et aller à l'état 45
-    tID      décalage et aller à l'état 46
-    tPRINTF  décalage et aller à l'état 19
-    tNOT     décalage et aller à l'état 47
-
-    E           aller à l'état 92
-    Invocation  aller à l'état 49
+    $défaut  réduction par utilisation de la règle 43 (SuiteDecl)
 
 
-État 79
+État 81
+
+   45 FinDecl: tCOMA SuiteDecl . FinDecl
+
+    tPV    décalage et aller à l'état 56
+    tCOMA  décalage et aller à l'état 57
+
+    FinDecl  aller à l'état 96
+
+
+État 82
+
+   28 E: E . tMUL E
+   29  | E . tDIV E
+   30  | E . tSUB E
+   31  | E . tADD E
+   35  | E . tEQCOND E
+   36  | E . tGT E
+   37  | E . tLT E
+   46 SuiteDeclConst: tID tEQ E .
+
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tLT      décalage et aller à l'état 71
+    tGT      décalage et aller à l'état 72
+    tEQCOND  décalage et aller à l'état 73
+
+    $défaut  réduction par utilisation de la règle 46 (SuiteDeclConst)
+
+
+État 83
+
+   48 FinDeclConst: tCOMA SuiteDeclConst . FinDeclConst
+
+    tPV    décalage et aller à l'état 60
+    tCOMA  décalage et aller à l'état 61
+
+    FinDeclConst  aller à l'état 97
+
+
+État 84
 
    33 E: tOBRACE E tCBRACE .
 
     $défaut  réduction par utilisation de la règle 33 (E)
 
 
-État 80
+État 85
 
    28 E: E . tMUL E
    28  | E tMUL E .
@@ -1031,7 +1129,7 @@ Invocation (49)
     $défaut  réduction par utilisation de la règle 28 (E)
 
 
-État 81
+État 86
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -1045,7 +1143,7 @@ Invocation (49)
     $défaut  réduction par utilisation de la règle 29 (E)
 
 
-État 82
+État 87
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -1056,13 +1154,13 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tMUL  décalage et aller à l'état 63
-    tDIV  décalage et aller à l'état 64
+    tMUL  décalage et aller à l'état 67
+    tDIV  décalage et aller à l'état 68
 
     $défaut  réduction par utilisation de la règle 31 (E)
 
 
-État 83
+État 88
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -1073,13 +1171,13 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tMUL  décalage et aller à l'état 63
-    tDIV  décalage et aller à l'état 64
+    tMUL  décalage et aller à l'état 67
+    tDIV  décalage et aller à l'état 68
 
     $défaut  réduction par utilisation de la règle 30 (E)
 
 
-État 84
+État 89
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -1090,16 +1188,16 @@ Invocation (49)
    37  | E . tLT E
    37  | E tLT E .
 
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tEQCOND  décalage et aller à l'état 69
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tEQCOND  décalage et aller à l'état 73
 
     $défaut  réduction par utilisation de la règle 37 (E)
 
 
-État 85
+État 90
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -1110,16 +1208,16 @@ Invocation (49)
    36  | E tGT E .
    37  | E . tLT E
 
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tEQCOND  décalage et aller à l'état 69
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tEQCOND  décalage et aller à l'état 73
 
     $défaut  réduction par utilisation de la règle 36 (E)
 
 
-État 86
+État 91
 
    28 E: E . tMUL E
    29  | E . tDIV E
@@ -1130,26 +1228,26 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tMUL  décalage et aller à l'état 63
-    tDIV  décalage et aller à l'état 64
-    tADD  décalage et aller à l'état 65
-    tSUB  décalage et aller à l'état 66
+    tMUL  décalage et aller à l'état 67
+    tDIV  décalage et aller à l'état 68
+    tADD  décalage et aller à l'état 69
+    tSUB  décalage et aller à l'état 70
 
     $défaut  réduction par utilisation de la règle 35 (E)
 
 
-État 87
+État 92
 
    15 If: tIF tOBRACE Cond tCBRACE Body . Else
 
-    tELSE  décalage et aller à l'état 93
+    tELSE  décalage et aller à l'état 98
 
     $défaut  réduction par utilisation de la règle 18 (Else)
 
-    Else  aller à l'état 94
+    Else  aller à l'état 99
 
 
-État 88
+État 93
 
    22 SuiteCond: tAND E . SuiteCond
    28 E: E . tMUL E
@@ -1160,22 +1258,22 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tLT      décalage et aller à l'état 67
-    tGT      décalage et aller à l'état 68
-    tEQCOND  décalage et aller à l'état 69
-    tAND     décalage et aller à l'état 72
-    tOR      décalage et aller à l'état 73
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tLT      décalage et aller à l'état 71
+    tGT      décalage et aller à l'état 72
+    tEQCOND  décalage et aller à l'état 73
+    tAND     décalage et aller à l'état 76
+    tOR      décalage et aller à l'état 77
 
     $défaut  réduction par utilisation de la règle 21 (SuiteCond)
 
-    SuiteCond  aller à l'état 95
+    SuiteCond  aller à l'état 100
 
 
-État 89
+État 94
 
    23 SuiteCond: tOR E . SuiteCond
    28 E: E . tMUL E
@@ -1186,104 +1284,83 @@ Invocation (49)
    36  | E . tGT E
    37  | E . tLT E
 
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tLT      décalage et aller à l'état 67
-    tGT      décalage et aller à l'état 68
-    tEQCOND  décalage et aller à l'état 69
-    tAND     décalage et aller à l'état 72
-    tOR      décalage et aller à l'état 73
+    tMUL     décalage et aller à l'état 67
+    tDIV     décalage et aller à l'état 68
+    tADD     décalage et aller à l'état 69
+    tSUB     décalage et aller à l'état 70
+    tLT      décalage et aller à l'état 71
+    tGT      décalage et aller à l'état 72
+    tEQCOND  décalage et aller à l'état 73
+    tAND     décalage et aller à l'état 76
+    tOR      décalage et aller à l'état 77
 
     $défaut  réduction par utilisation de la règle 21 (SuiteCond)
 
-    SuiteCond  aller à l'état 96
+    SuiteCond  aller à l'état 101
 
 
-État 90
+État 95
 
    19 While: tWHILE tOBRACE Cond tCBRACE Body .
 
     $défaut  réduction par utilisation de la règle 19 (While)
 
 
-État 91
+État 96
 
-   43 FinDeclaration: tEQ E tPV .
+   45 FinDecl: tCOMA SuiteDecl FinDecl .
 
-    $défaut  réduction par utilisation de la règle 43 (FinDeclaration)
-
-
-État 92
-
-   28 E: E . tMUL E
-   29  | E . tDIV E
-   30  | E . tSUB E
-   31  | E . tADD E
-   35  | E . tEQCOND E
-   36  | E . tGT E
-   37  | E . tLT E
-   40 Decl: tCONST tINT tID SuiteDecl tEQ E . tPV
-
-    tPV      décalage et aller à l'état 97
-    tMUL     décalage et aller à l'état 63
-    tDIV     décalage et aller à l'état 64
-    tADD     décalage et aller à l'état 65
-    tSUB     décalage et aller à l'état 66
-    tLT      décalage et aller à l'état 67
-    tGT      décalage et aller à l'état 68
-    tEQCOND  décalage et aller à l'état 69
+    $défaut  réduction par utilisation de la règle 45 (FinDecl)
 
 
-État 93
+État 97
+
+   48 FinDeclConst: tCOMA SuiteDeclConst FinDeclConst .
+
+    $défaut  réduction par utilisation de la règle 48 (FinDeclConst)
+
+
+État 98
 
    16 Else: tELSE . If
    17     | tELSE . Body
 
-    tOBRACKET  décalage et aller à l'état 13
+    tOBRACKET  décalage et aller à l'état 14
     tIF        décalage et aller à l'état 20
 
-    Body  aller à l'état 98
-    If    aller à l'état 99
+    Body  aller à l'état 102
+    If    aller à l'état 103
 
 
-État 94
+État 99
 
    15 If: tIF tOBRACE Cond tCBRACE Body Else .
 
     $défaut  réduction par utilisation de la règle 15 (If)
 
 
-État 95
+État 100
 
    22 SuiteCond: tAND E SuiteCond .
 
     $défaut  réduction par utilisation de la règle 22 (SuiteCond)
 
 
-État 96
+État 101
 
    23 SuiteCond: tOR E SuiteCond .
 
     $défaut  réduction par utilisation de la règle 23 (SuiteCond)
 
 
-État 97
-
-   40 Decl: tCONST tINT tID SuiteDecl tEQ E tPV .
-
-    $défaut  réduction par utilisation de la règle 40 (Decl)
-
-
-État 98
+État 102
 
    17 Else: tELSE Body .
 
     $défaut  réduction par utilisation de la règle 17 (Else)
 
 
-État 99
+État 103
 
    16 Else: tELSE If .
 
