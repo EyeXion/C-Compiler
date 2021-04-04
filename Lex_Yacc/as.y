@@ -3,11 +3,11 @@
     char id[30];
 }
 %{
-#include "../Symboles/table_symboles.h"
+#include "../Tables/Symboles/table_symboles.h"
 #include <stdio.h> 
 #include <string.h>
 #include <stdlib.h>
-#include "../Symboles/tab_instruc.h"
+#include "../Tables/Instructions/tab_instruc.h"
 #define TAILLE 1024
 
 enum type_t type_courant;
@@ -84,10 +84,10 @@ E : tNB { int addr = allocate_mem_temp_var(INT); add_operation(AFC, addr,$1,0); 
 
 E : tNBEXP { printf("Nombre exp\n"); int addr = allocate_mem_temp_var(INT); add_operation(AFC, addr,$1,0); $$ = addr;};
 E : tID { printf("Id\n"); /*Faire un get_address sur la pile*/};
-E : E tMUL E { printf("Mul\n"); int addr = allocate_mem_temp_var(INT); add_operation(MUL, addr,$1,$2); $$ = addr;};
-E : E tDIV E { printf("Div\n"); int addr = allocate_mem_temp_var(INT); add_operation(DIV, addr,$1,$2); $$ = addr;};
-E : E tSUB E { printf("Sub\n"); int addr = allocate_mem_temp_var(INT); add_operation(SOU, addr,$1,$2); $$ = addr;};
-E : E tADD E { printf("Add\n"); int addr = allocate_mem_temp_var(INT); add_operation(ADD, addr,$1,$2); $$ = addr;};
+E : E tMUL E { printf("Mul\n"); int addr = allocate_mem_temp_var(INT); add_operation(MUL, addr,$1,$3); $$ = addr;};
+E : E tDIV E { printf("Div\n"); int addr = allocate_mem_temp_var(INT); add_operation(DIV, addr,$1,$3); $$ = addr;};
+E : E tSUB E { printf("Sub\n"); int addr = allocate_mem_temp_var(INT); add_operation(SOU, addr,$1,$3); $$ = addr;};
+E : E tADD E { printf("Add\n"); int addr = allocate_mem_temp_var(INT); add_operation(ADD, addr,$1,$3); $$ = addr;};
 E : Invocation { printf("Invoc\n"); int addr = allocate_mem_temp_var(INT); add_operation(AFC, addr,$1,0); $$ = addr;};
 E : tOBRACE E tCBRACE { printf("Parentheses\n"); $$=$2;};
 E : tSUB E { printf("Moins\n"); int addr = allocate_mem_temp_var(INT); add_operation(SOU, 0,addr,0); $$ = addr;};

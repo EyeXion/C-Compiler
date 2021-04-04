@@ -1,0 +1,9 @@
+rondoudou_gcc
+output.txt
+Tables/Symboles/*.o
+Tables/Symboles/test
+Tables/Instructions/*.o
+Tables/Instructions/test
+Lex_Yacc/as.output 
+Lex_Yacc/as.tab.* 
+Lex_Yacc/lex.yy.*
