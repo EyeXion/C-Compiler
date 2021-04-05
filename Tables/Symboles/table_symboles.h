@@ -35,7 +35,7 @@ struct symbole_t {
 	char nom[30];
 	uintptr_t adresse;
 	enum type_t type;
-	char initialized;
+	int initialized;
     int profondeur;
 };
 
@@ -52,3 +52,4 @@ int get_last_addr();
 struct symbole_t * get_variable(char * nom);
 int allocate_mem_temp_var(enum type_t type);
 void reset_temp_vars();
+void reset_pronf();

@@ -17,3 +17,5 @@ extern struct operation_t tab_op[MAXTAILLE];
 
 void add_operation(enum opcode_t opcode, int arg1, int arg2, int arg3);
 void create_asm();
+int get_current_index();
+void patch(int index, int arg);

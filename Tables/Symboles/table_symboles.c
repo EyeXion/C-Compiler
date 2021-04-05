@@ -58,9 +58,9 @@ char * type_to_string(enum type_t type) {
 
 void print_symbole(struct symbole_t symbole) {
     if (symbole.initialized) {
-		printf("\t\t{nom:%s, adresse:%p, type:%s, initialized:OUI, profondeur : %d}\n", symbole.nom, (void *)(symbole.adresse), type_to_string(symbole.type), symbole.profondeur);
+		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d}\n", symbole.nom, symbole.adresse, type_to_string(symbole.type), symbole.profondeur);
 	} else {
-		printf("\t\t{nom:%s, adresse:%p, type:%s, initialized:NON, profondeur : %d}\n", symbole.nom, (void *)(symbole.adresse), type_to_string(symbole.type),symbole.profondeur);
+		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d}\n", symbole.nom, symbole.adresse, type_to_string(symbole.type),symbole.profondeur);
 	}
 }
 
@@ -137,9 +137,9 @@ void print() {
 	int i;
 	for (i=0; i < pile->taille; i++) {
 		if (aux->symbole.initialized) {
-			printf("\t\t{nom:%s, adresse:%p, type:%s, initialized:OUI}\n", aux->symbole.nom, (void *)(aux->symbole.adresse), type_to_string(aux->symbole.type));
+			printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d}\n", aux->symbole.nom, aux->symbole.adresse, type_to_string(aux->symbole.type), aux->symbole.profondeur);
 		} else {
-			printf("\t\t{nom:%s, adresse:%p, type:%s, initialized:NON}\n", aux->symbole.nom, (void *)(aux->symbole.adresse), type_to_string(aux->symbole.type));
+			printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d}\n", aux->symbole.nom, aux->symbole.adresse, type_to_string(aux->symbole.type), aux->symbole.profondeur);
 		}
 		aux = aux->suivant;
 	}
@@ -158,5 +158,12 @@ int allocate_mem_temp_var(enum type_t type){
 
 void reset_temp_vars(){
 	temp_addr = MAXADDR;
+}
+
+
+void reset_pronf(){
+	while (pile->first->symbole.profondeur == profondeur){
+		pop();
+	}
 }
 

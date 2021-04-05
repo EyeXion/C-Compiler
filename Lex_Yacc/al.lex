@@ -43,7 +43,7 @@ yyerror (char const *s)
 ","         { return tCOMA; }
 "\n"        {} //Ne pas les retourner à Yacc
 [a-zA-Z][a-zA-Z0-9_]* { strcpy(yylval.id, yytext); return tID; }
-.				{ return tERROR; }
+.				{ }//return tERROR; }
 
 %%
 

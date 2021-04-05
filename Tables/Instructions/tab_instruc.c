@@ -66,3 +66,16 @@ void create_asm(){
 		free(line);
 	}
 }
+
+int get_current_index(){return current_index;}
+
+
+
+void patch(int index, int arg){
+	if (tab_op[index].opcode == JMP){
+		tab_op[index].arg1 = arg;
+	}
+	else if (tab_op[index].opcode == JMF){
+		tab_op[index].arg2 = arg;
+	}
+}
