@@ -54,6 +54,12 @@ char * get_asm_line_from_op(struct operation_t op){
 		case (PRI):
 			sprintf(buffer,"PRI %d\n",op.arg1);
 			break;
+		case (GET):
+			sprintf(buffer,"GET %d %d\n",op.arg1, op.arg2);
+			break;
+		case (MOV):
+			sprintf(buffer,"MOV %d %d\n",op.arg1, op.arg2);
+			break;
 	}
 	return buffer;
 }

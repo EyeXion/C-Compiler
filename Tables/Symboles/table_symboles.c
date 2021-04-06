@@ -36,6 +36,7 @@ int last_addr = 0;
 int temp_addr = MAXADDR;
 int taille_types[] = {-1, 4};
 int profondeur = 0;
+int last_temp_var_size;
 
 struct element_t {
 	struct symbole_t symbole;
@@ -48,20 +49,28 @@ struct pile_t {
 };
 struct pile_t * pile;
 
-char * type_to_string(enum type_t type) {
-	if (type == INT) {
-		return "int";
-	} else {
-		return "unknown";	
+char * type_to_string(struct type_t type) {
+    char * star = "*";
+    char * resultat = malloc(sizeof(char)*20);
+    for (int i = 0; i< type.pointeur_level; i++){
+        strcat(resultat,star);
+    }
+	if (type.base == INT) {
+		strcat(resultat,"int");
+	} else {;
+	    strcat(resultat,"unknown");
 	}
+    return resultat;
 }
 
 void print_symbole(struct symbole_t symbole) {
+    char * type = type_to_string(symbole.type);
     if (symbole.initialized) {
-		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d}\n", symbole.nom, symbole.adresse, type_to_string(symbole.type), symbole.profondeur);
+		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d}\n", symbole.nom, symbole.adresse, type, symbole.profondeur);
 	} else {
-		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d}\n", symbole.nom, symbole.adresse, type_to_string(symbole.type),symbole.profondeur);
+		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d}\n", symbole.nom, symbole.adresse, type,symbole.profondeur);
 	}
+    free(type);
 }
 
 void init (void) {
@@ -70,7 +79,7 @@ void init (void) {
 	pile->taille = 0;
 }
 
-int push(char * nom, int isInit, enum type_t type) {
+int push(char * nom, int isInit, struct type_t type) {
 	struct element_t * aux = malloc(sizeof(struct element_t));
 	struct symbole_t symbole = {"", last_addr, type, isInit,profondeur}; 
 	strcpy(symbole.nom,nom);
@@ -79,7 +88,7 @@ int push(char * nom, int isInit, enum type_t type) {
 	pile->first = aux;
 	pile->taille++;
 	int addr_var = last_addr;
-	last_addr += taille_types[type]; 
+	last_addr += taille_types[type.base]; 
 	return addr_var;
 }
 
@@ -92,7 +101,7 @@ struct symbole_t pop() {
 		retour = aux->symbole;
 		free(aux);
 		pile->taille--;
-		last_addr -= taille_types[retour.type]; 
+		last_addr -= taille_types[retour.type.base]; 
 	}
 	return retour;
 }
@@ -151,8 +160,9 @@ int get_last_addr(){
 }
 
 
-int allocate_mem_temp_var(enum type_t type){
-	temp_addr -= taille_types[type];
+int allocate_mem_temp_var(enum base_type_t type){
+	last_temp_var_size = taille_types[type];
+    temp_addr -= last_temp_var_size;
 	return temp_addr;
 }
 
@@ -162,8 +172,12 @@ void reset_temp_vars(){
 
 
 void reset_pronf(){
-	while (pile->first->symbole.profondeur == profondeur){
-		pop();
-	}
+    printf("Profondeur dans reset : %d\n", profondeur);
+    while (pile->first != NULL && pile->first->symbole.profondeur == profondeur){
+	    pop();
+    }
 }
 
+void decrement_temp_var(struct type_t type){
+   temp_addr += last_temp_var_size;
+}

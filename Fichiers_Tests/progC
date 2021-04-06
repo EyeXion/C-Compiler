@@ -1,20 +1,7 @@
 int main(){
-    int b = 4 * 5;
-	int a = 1;
-	while (b){
-		b = 2;
-		if (a){
-			int u = 8;		
-		}
-		else{
-			if (1){
-				int j = 7;
-			}
-			else if (5){
-				int g = 89;
-			}
-			int y = 9;
-		}
-	}	
-	int p = 85;
+    int * b = 4 * 5;
+    int ** c,d;
+    int ** y = &b;
+    * c = 1;
+    &b = 2;
 }
