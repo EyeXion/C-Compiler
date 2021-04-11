@@ -79,6 +79,8 @@ void init (void) {
 	pile->taille = 0;
 }
 
+
+
 int push(char * nom, int isInit, struct type_t type) {
 	struct element_t * aux = malloc(sizeof(struct element_t));
 	struct symbole_t symbole = {"", last_addr, type, isInit,profondeur}; 
@@ -104,6 +106,11 @@ struct symbole_t pop() {
 		last_addr -= taille_types[retour.type.base]; 
 	}
 	return retour;
+}
+
+struct symbole_t decl_tab(char * name, struct type_t type, int nb_blocs){
+	push(name,0,type);
+	last_addr += (nb_blocs-1)*taille_types[type.base];
 }
 		
 char status(char * nom) {
@@ -161,15 +168,10 @@ int get_last_addr(){
 
 
 int allocate_mem_temp_var(enum base_type_t type){
-	last_temp_var_size = taille_types[type];
-    temp_addr -= last_temp_var_size;
-	return temp_addr;
+	struct type_t type_bis = {type,0};
+	int addr = push("",1,type_bis);
+	return addr;
 }
-
-void reset_temp_vars(){
-	temp_addr = MAXADDR;
-}
-
 
 void reset_pronf(){
     printf("Profondeur dans reset : %d\n", profondeur);
@@ -178,6 +180,6 @@ void reset_pronf(){
     }
 }
 
-void decrement_temp_var(struct type_t type){
-   temp_addr += last_temp_var_size;
+void decrement_temp_var(){
+   pop();
 }

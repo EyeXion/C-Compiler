@@ -29,6 +29,8 @@ yyerror (char const *s)
 "||"        { return tOR; }
 "else"      { return tELSE;}
 "&"         { return tADDR;}
+"["         { return tOCROCH;}
+"]" 		{ return tCCROCH;}
 
 
 [0-9]+	{ yylval.nombre = atoi(yytext); return tNB; }

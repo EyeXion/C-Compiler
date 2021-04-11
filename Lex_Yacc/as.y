@@ -20,6 +20,7 @@ int nbs_instructions_to_patch[10];
 %token tMAIN
 %token tOBRACKET tCBRACKET
 %token tOBRACE tCBRACE
+%token tOCROCH tCCROCH
 %token tINT
 %token tCONST
 %token tPV tCOMA
@@ -33,14 +34,14 @@ int nbs_instructions_to_patch[10];
 %token tAND tOR
 %token tADDR
 
-%left tAND tOR
-%left tNOT
 %left tLT tGT
 %left tEQCOND
+%left tAND tOR
+%left tNOT
 %left tADD tSUB
 %left tMUL tDIV
 
-%type<nombre> E Invocation DebutAff
+%type<nombre> E Invocation DebutAff SuiteAffPointeur DebutAffPointeur EBeforeAddr
 
 
 
@@ -63,11 +64,11 @@ Body : tOBRACKET {profondeur++;} Instructions tCBRACKET {print(); reset_pronf();
 
 Instructions : Instruction Instructions ;
 Instructions : ;
-Instruction : Aff {reset_temp_vars();};
-Instruction : Decl {reset_temp_vars();};
-Instruction : Invocation tPV{reset_temp_vars();};
-Instruction : If {reset_temp_vars();};
-Instruction : While {reset_temp_vars();};
+Instruction : Aff {};
+Instruction : Decl {};
+Instruction : Invocation tPV{};
+Instruction : If {};
+Instruction : While {};
 
 //On considère que la première ligne du code en ASM est la ligne 0
 If : tIF tOBRACE E tCBRACE {
@@ -76,8 +77,9 @@ Body  {int current = get_current_index();
 		patch($1,current + 1);
 		add_operation(JMP,0,0,0);
 		instructions_ligne_to_patch[profondeur][nbs_instructions_to_patch[profondeur]] = current;
-		nbs_instructions_to_patch[profondeur]++;}
-Else { printf("If reconnu\n");};
+		nbs_instructions_to_patch[profondeur]++;
+		decrement_temp_var();}
+Else {printf("If reconnu\n");};
 
 
 Else : tELSE If { printf("Else if reconnu\n"); };
@@ -94,7 +96,8 @@ for (int i = 0; i< nbs_instructions_to_patch[profondeur]; i++){
 nbs_instructions_to_patch[profondeur] = 0;};
 While : tWHILE tOBRACE E tCBRACE {
 add_operation(JMF,$3,0,0); 
-$1 = get_current_index() - 1;}
+$1 = get_current_index() - 1;
+decrement_temp_var();}
 
 Body { printf("While reconnu\n");
 int current = get_current_index();
@@ -102,16 +105,19 @@ patch($1,current + 1);
 add_operation(JMP,$1,0,0);};
 
 
-Aff : DebutAff tEQ E tPV {add_operation(COP, $1, $3,0);} ; //besoin de get_address
+Aff : DebutAff tEQ E tPV {add_operation(COP, $1, $3,0); decrement_temp_var();} ; 
+Aff : DebutAffPointeur tEQ E tPV {add_operation(WR,$1,$3,0); decrement_temp_var(); decrement_temp_var();};
 
 DebutAff : tID {struct symbole_t * symbole  = get_variable($1); symbole->initialized = 1; $$=symbole->adresse; printf("%s prend une valeur\n", $1);};
-DebutAff : tMUL E { add_operation(GET, $2, $2, 0); $$=$2;};
-DebutAff : tADDR tID { int addr = allocate_mem_temp_var(INT);  struct symbole_t * symbole = get_variable($2); add_operation(AFC,addr, symbole->adresse,0); $$=addr;};
+
+DebutAffPointeur : tMUL SuiteAffPointeur {add_operation(READ, $2, $2, 0); $$=$2;};
+DebutAffPointeur : SuiteAffPointeur {$$=$1;};
+SuiteAffPointeur : tMUL tID {struct symbole_t * symbole  = get_variable($2); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
+SuiteAffPointeur : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(AFC, addr,symbole->adresse,0); int addr2 = allocate_mem_temp_var(INT); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); $$=$3; decrement_temp_var(); decrement_temp_var();};
+
 
 E : tNB { int addr = allocate_mem_temp_var(INT); add_operation(AFC, addr,$1,0); $$ = addr;};
-
 E : tNBEXP { printf("Nombre exp\n"); int addr = allocate_mem_temp_var(INT); add_operation(AFC, addr,$1,0); $$ = addr;};
-E : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
 E : E tMUL E { printf("Mul\n"); add_operation(MUL,$1,$1,$3); $$ = $1; decrement_temp_var();};
 E : E tDIV E { printf("Div\n");  add_operation(DIV, $1,$1,$3); $$ = $1; decrement_temp_var();};
 E : E tSUB E { printf("Sub\n"); add_operation(SOU,$1,$1,$3); $$ = $1; decrement_temp_var();};
@@ -125,13 +131,17 @@ E : E tLT E { printf("<\n"); add_operation(INF,$1,$1,$3); $$ = $1; decrement_tem
 E : tNOT E { printf("!\n"); };
 E : E tAND E {add_operation(MUL,$1,$1,$3); $$ = $1; decrement_temp_var();};
 E : E tOR E {add_operation(ADD,$1,$1,$3); $$ = $1; decrement_temp_var();} ;
-E : tMUL E { add_operation(GET, $2, $2, 0); $$=$2;};
-E : tADDR tID { int addr = allocate_mem_temp_var(INT);  struct symbole_t * symbole = get_variable($2); add_operation(AFC,addr, symbole->adresse,0); $$=addr;};
+E : tMUL E { add_operation(READ, $2, $2, 0); $$=$2;};
+E : tADDR EBeforeAddr {add_operation(AFCA,$2, $2,0); $$=$2;};
+E : EBeforeAddr {$$=$1;};
 
+
+EBeforeAddr : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(AFC, addr,symbole->adresse,0); int addr2 = allocate_mem_temp_var(INT); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; decrement_temp_var(); decrement_temp_var();};
+EBeforeAddr : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
 
 
 //Créer un champ isConst dans la table des symboles
-Type : tINT {type_courant.base = INT; type_courant.pointeur_level = 0; printf("Type int\n");} ;
+Type : tINT {type_courant.base = INT; type_courant.pointeur_level = 0; type_courant.nb_blocs = 1; printf("Type int\n");} ;
 Type : Type tMUL {type_courant.pointeur_level++;  printf("Type int *\n");};
 //SuiteType : tMUL SuiteType {type_courant.pointeur_level++; printf(" * en plus\n");} ; 
 //SuiteType : ;
@@ -140,11 +150,12 @@ Decl : Type SuiteDecl FinDecl ;
 Decl : tCONST Type SuiteDeclConst FinDeclConst;
 
 SuiteDecl : tID {push($1, 0, type_courant); printf("Suite Decl\n");};
-SuiteDecl : tID tEQ E {int addr = push($1,1, type_courant); add_operation(COP, addr,$3,0);};
+SuiteDecl : tID tEQ E {decrement_temp_var(); int addr = push($1,1, type_courant);};
+SuiteDecl : tID tOCROCH tNB tCCROCH {type_courant.pointeur_level++; decl_tab($1,type_courant,$3); type_courant.nb_blocs = 1;} ;
 FinDecl : tPV { printf("Fin Decl\n");};
 FinDecl : tCOMA SuiteDecl FinDecl ;
 
-SuiteDeclConst : tID tEQ E {int addr = push($1,1, type_courant); add_operation(COP, addr,$3,0);};
+SuiteDeclConst : tID tEQ E {decrement_temp_var(); int addr = push($1,1, type_courant);};
 FinDeclConst : tPV;
 FinDeclConst : tCOMA SuiteDeclConst FinDeclConst;
 

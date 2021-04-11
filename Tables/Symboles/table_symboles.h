@@ -33,8 +33,9 @@ extern int taille_types[];
 extern int profondeur;
 
 struct type_t {
-    enum base_type_t base; 
+    enum base_type_t base;
     int pointeur_level;
+	int nb_blocs;
 };
 
 struct symbole_t {
@@ -45,14 +46,13 @@ struct symbole_t {
     int profondeur;
 };
 
-
-
 void print_symbole(struct symbole_t symbole);
 
 
 void init(void);
 int push(char * nom, int isInit, struct type_t type);
 struct symbole_t pop();
+struct symbole_t decl_tab(char * name, struct type_t type, int nb_blocs);
 // renvoi 0 si nom n'existe pas, 2 si nom existe sans etre initialisée, 1 sinon
 char status(char * nom);
 void print();

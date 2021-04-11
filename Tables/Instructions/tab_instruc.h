@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 
-enum opcode_t {ADD,MUL,SOU,DIV,COP,AFC,JMP,JMF,INF,SUP,EQU,PRI,GET,MOV};
+enum opcode_t {ADD,MUL,SOU,DIV,COP,AFC,AFCA,JMP,JMF,INF,SUP,EQU,PRI,READ,WR};
 
 struct operation_t {
 	enum opcode_t opcode;
