@@ -37,6 +37,7 @@ int temp_addr = MAXADDR;
 int taille_types[] = {-1, 4};
 int profondeur = 0;
 int last_temp_var_size;
+const struct type_t integer = {INT, 0, 1};
 
 struct element_t {
 	struct symbole_t symbole;
@@ -90,7 +91,7 @@ int push(char * nom, int isInit, struct type_t type) {
 	pile->first = aux;
 	pile->taille++;
 	int addr_var = last_addr;
-	last_addr += taille_types[type.base]; 
+	last_addr += (type.nb_blocs)*taille_types[type.base]; 
 	return addr_var;
 }
 
@@ -104,30 +105,6 @@ struct symbole_t pop() {
 		free(aux);
 		pile->taille--;
 		last_addr -= taille_types[retour.type.base]; 
-	}
-	return retour;
-}
-
-struct symbole_t decl_tab(char * name, struct type_t type, int nb_blocs){
-	push(name,0,type);
-	last_addr += (nb_blocs-1)*taille_types[type.base];
-}
-		
-char status(char * nom) {
-	char retour = 0;
-	struct element_t * aux = pile->first;
-	int i;
-	for (i=0; i < pile->taille; i++) {
-		if (!strcmp(nom, aux->symbole.nom)) {
-			if (aux->symbole.initialized) {
-				retour = 1;
-			} else {
-				retour = 2;
-			}
-			break;
-		} else {
-			aux = aux->suivant;
-		}
 	}
 	return retour;
 }
@@ -166,20 +143,18 @@ int get_last_addr(){
 	return last_addr;
 }
 
-
-int allocate_mem_temp_var(enum base_type_t type){
-	struct type_t type_bis = {type,0};
-	int addr = push("",1,type_bis);
-	return addr;
+void inc_prof() {
+    profondeur++;
 }
 
-void reset_pronf(){
+int get_prof() {
+    return profondeur;
+}
+
+void reset_prof(){
     printf("Profondeur dans reset : %d\n", profondeur);
     while (pile->first != NULL && pile->first->symbole.profondeur == profondeur){
 	    pop();
     }
-}
-
-void decrement_temp_var(){
-   pop();
+    profondeur--;
 }
