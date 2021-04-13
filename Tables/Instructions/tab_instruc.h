@@ -13,9 +13,11 @@ struct operation_t {
 	int arg3;
 };
 
-extern struct operation_t tab_op[MAXTAILLE];
-
+//Ajoute une opération dans la table (à la fin)
 void add_operation(enum opcode_t opcode, int arg1, int arg2, int arg3);
-void create_asm();
+//Renvoi le prochain slot disponible
 int get_current_index();
+//Permet de patcher les Jump (pas de Van Halen)
 void patch(int index, int arg);
+//Ecrit la table des intructions dans un fichier ASM
+void create_asm();
