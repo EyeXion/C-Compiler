@@ -51,8 +51,11 @@ struct type_t {
     enum base_type_t base;
     //Si la variable est un pointeur, on enregitre son niveau (nombre de *)
     int pointeur_level;
-    //Si il s'agit d'un tableau, on enregistre sa taille (nombre de cases)
+    //Si il s'agit d'un tableau, on enregistre sa taille (nombre de cases) (même si c'est une variable on met quand même un nb_blocs à) 
 	int nb_blocs;
+	//Si c'est un tableau, cette valeur est à 1
+	int isTab;
+	 
 };
 //Constante pour les entiers
 extern const struct type_t integer;

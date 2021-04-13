@@ -1,6 +1,5 @@
 int main(){
 	int b[3];
-	int a;
-	a = b[1];
 	int * c = &b[2];
+	int * f = &b[1];
 }

@@ -67,9 +67,9 @@ char * type_to_string(struct type_t type) {
 void print_symbole(struct symbole_t symbole) {
     char * type = type_to_string(symbole.type);
     if (symbole.initialized) {
-		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d}\n", symbole.nom, symbole.adresse, type, symbole.profondeur);
+		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d, isTab : %d}\n", symbole.nom, symbole.adresse, type, symbole.profondeur,symbole.type.isTab);
 	} else {
-		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d}\n", symbole.nom, symbole.adresse, type,symbole.profondeur);
+		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d, isTab : %d}\n", symbole.nom, symbole.adresse, type,symbole.profondeur,symbole.type.isTab);
 	}
     free(type);
 }
@@ -130,9 +130,9 @@ void print() {
 	int i;
 	for (i=0; i < pile->taille; i++) {
 		if (aux->symbole.initialized) {
-			printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d}\n", aux->symbole.nom, aux->symbole.adresse, type_to_string(aux->symbole.type), aux->symbole.profondeur);
+			printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d, isTab : %d}\n", aux->symbole.nom, aux->symbole.adresse, type_to_string(aux->symbole.type), aux->symbole.profondeur, aux->symbole.type.isTab);
 		} else {
-			printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d}\n", aux->symbole.nom, aux->symbole.adresse, type_to_string(aux->symbole.type), aux->symbole.profondeur);
+			printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d, isTab : %d}\n", aux->symbole.nom, aux->symbole.adresse, type_to_string(aux->symbole.type), aux->symbole.profondeur, aux->symbole.type.isTab);
 		}
 		aux = aux->suivant;
 	}

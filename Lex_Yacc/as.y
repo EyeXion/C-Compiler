@@ -113,7 +113,7 @@ DebutAff : tID {struct symbole_t * symbole  = get_variable($1); symbole->initial
 DebutAffPointeur : tMUL SuiteAffPointeur {add_operation(READ, $2, $2, 0); $$=$2;};
 DebutAffPointeur : SuiteAffPointeur {$$=$1;};
 SuiteAffPointeur : tMUL tID {struct symbole_t * symbole  = get_variable($2); int addr = push("0_TEMPORARY", 1, symbole->type); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
-SuiteAffPointeur : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = push("0_TEMPORARY", 1, symbole->type); add_operation(AFC, addr,symbole->adresse,0); int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); $$=$3; pop(); pop();};
+SuiteAffPointeur : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = push("0_TEMPORARY", 1, symbole->type); if (symbole->type.pointeur_level > 0){add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); $$=$3; pop(); pop();};
 
 
 E : tNB { int addr = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr,$1,0); $$ = addr;};
@@ -134,16 +134,16 @@ E : E tOR E {add_operation(ADD,$1,$1,$3); $$ = $1; pop();} ;
 E : tMUL E { add_operation(READ, $2, $2, 0); $$=$2;};
 E : tADDR EBis {add_operation(COPA,$2, $2,0); $$=$2;};
 E : tADDR ETer {add_operation(COPA,$2, $2,0); $$=$2;};
-E : tID  tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
-E : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(AFC, addr,symbole->adresse,0); int addr2 = allocate_mem_temp_var(INT); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; decrement_temp_var(); decrement_temp_var();};
+E : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if (symbole->type.isTab){add_operation(AFCA, addr,symbole->adresse,0); } else{add_operation(COP, addr,symbole->adresse,0);} $$=addr;};
+E : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if(type.pointeur_level > 0) {add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; pop(); pop();};
 
+EBis : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if(type.pointeur_level > 0) {add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); $$=$3; pop(); pop();};
+ETer : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); add_operation(AFCA, addr,symbole->adresse,0); $$=addr;};
 
-EBeforeAddr : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = push("0_TEMPORARY", 1, symbole->type); add_operation(AFC, addr,symbole->adresse,0); int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; pop(); pop();};
-EBeforeAddr : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); int addr = push("0_TEMPORARY", 1, symbole->type); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
 
 
 //Créer un champ isConst dans la table des symboles
-Type : tINT {type_courant.base = INT; type_courant.pointeur_level = 0; type_courant.nb_blocs = 1; printf("Type int\n");} ;
+Type : tINT {type_courant.base = INT; type_courant.pointeur_level = 0; type_courant.isTab = 0; type_courant.nb_blocs = 1; printf("Type int\n");} ;
 Type : Type tMUL {type_courant.pointeur_level++;  printf("Type int *\n");};
 //SuiteType : tMUL SuiteType {type_courant.pointeur_level++; printf(" * en plus\n");} ; 
 //SuiteType : ;
@@ -153,7 +153,7 @@ Decl : tCONST Type SuiteDeclConst FinDeclConst;
 
 SuiteDecl : tID {push($1, 0, type_courant); printf("Suite Decl\n");};
 SuiteDecl : tID tEQ E {pop(); int addr = push($1,1, type_courant);};
-SuiteDecl : tID tOCROCH tNB tCCROCH {type_courant.pointeur_level++; type_courant.nb_blocs = $3; push($1, 0, type_courant);} ;
+SuiteDecl : tID tOCROCH tNB tCCROCH {type_courant.isTab = 1; type_courant.nb_blocs = $3; push($1, 0, type_courant);} ;
 FinDecl : tPV { printf("Fin Decl\n");};
 FinDecl : tCOMA SuiteDecl FinDecl ;
 
