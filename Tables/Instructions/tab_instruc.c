@@ -36,8 +36,8 @@ char * get_asm_line_from_op(struct operation_t op){
 		case (AFC):
 			sprintf(buffer,"AFC %d %d\n",op.arg1, op.arg2);
 			break;
-		case (AFCA):
-			sprintf(buffer,"AFCA %d %d\n",op.arg1, op.arg2);
+		case (COPA):
+			sprintf(buffer,"COPA %d %d\n",op.arg1, op.arg2);
 			break;
 		case (JMP):
 			sprintf(buffer,"JMP %d\n",op.arg1);

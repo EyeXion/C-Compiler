@@ -41,7 +41,7 @@ int nbs_instructions_to_patch[10];
 %left tADD tSUB
 %left tMUL tDIV
 
-%type<nombre> E Invocation DebutAff SuiteAffPointeur DebutAffPointeur EBeforeAddr
+%type<nombre> E Invocation DebutAff SuiteAffPointeur DebutAffPointeur EBis ETer
 
 
 
@@ -132,12 +132,13 @@ E : tNOT E { printf("!\n"); };
 E : E tAND E {add_operation(MUL,$1,$1,$3); $$ = $1; decrement_temp_var();};
 E : E tOR E {add_operation(ADD,$1,$1,$3); $$ = $1; decrement_temp_var();} ;
 E : tMUL E { add_operation(READ, $2, $2, 0); $$=$2;};
-E : tADDR EBeforeAddr {add_operation(AFCA,$2, $2,0); $$=$2;};
-E : EBeforeAddr {$$=$1;};
+E : tADDR EBis {add_operation(COPA,$2, $2,0); $$=$2;};
+E : tADDR ETer {add_operation(COPA,$2, $2,0); $$=$2;};
+E : tID  tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
+E : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(AFC, addr,symbole->adresse,0); int addr2 = allocate_mem_temp_var(INT); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; decrement_temp_var(); decrement_temp_var();};
 
-
-EBeforeAddr : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(AFC, addr,symbole->adresse,0); int addr2 = allocate_mem_temp_var(INT); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; decrement_temp_var(); decrement_temp_var();};
-EBeforeAddr : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
+EBis : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(AFC, addr,symbole->adresse,0); int addr2 = allocate_mem_temp_var(INT); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); $$=$3; decrement_temp_var(); decrement_temp_var();};
+ETer : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); int addr = allocate_mem_temp_var(symbole->type.base); add_operation(AFC, addr,symbole->adresse,0); $$=addr;};
 
 
 //Créer un champ isConst dans la table des symboles

@@ -26,7 +26,7 @@ Copie le contenu de l'adresse @Y à l'adresse @X
 
 Copie la valeur val à l'adresse @X
 
-## AFCA @X @C
+## COPA @X @C
 
 Copie la valeur contenue dans @C à l'adresse @X en considérant que ce qui est copié est une adresse (et donc il faut ajouter BP)
 
