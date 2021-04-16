@@ -73,6 +73,8 @@ void inc_prof();
 int get_prof();
 //Détruit toutes les variables de la profondeur actuelle puis décrémente la profondeur
 void reset_prof();
+//Décrémente la profondeur sans reset les variables
+void decrement_prof();
 
 
 

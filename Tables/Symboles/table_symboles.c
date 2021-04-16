@@ -147,6 +147,10 @@ void inc_prof() {
     profondeur++;
 }
 
+void decrement_prof(){
+	profondeur--;
+}
+
 int get_prof() {
     return profondeur;
 }

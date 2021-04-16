@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "../Tables/Instructions/tab_instruc.h"
+#include "../Tables/Fonctions/tab_fonctions.h"
 #define TAILLE 1024
 
 struct type_t type_courant;
@@ -41,7 +42,7 @@ int nbs_instructions_to_patch[10];
 %left tADD tSUB
 %left tMUL tDIV
 
-%type<nombre> E Invocation DebutAff SuiteAffPointeur DebutAffPointeur EBis ETer
+%type<nombre> E DebutAff SuiteAffPointeur DebutAffPointeur EBis ETer
 
 
 
@@ -55,9 +56,17 @@ Main : tINT tMAIN tOBRACE Params tCBRACE Body { print(); create_asm();} ;
 
 Params : { printf("Sans Params\n"); } ;
 Params : Param SuiteParams ;
-Param : Type tID { printf("Prametre : %s\n", $2); };
+Param : Type tID { printf("Parametre : %s\n", $2); };
 SuiteParams : tCOMA Param SuiteParams ;
 SuiteParams : ;
+
+
+Args : Arg ArgSuite;
+Args : ;
+Arg : Type tID {int addr = push($2,1, type_courant);};
+ArgSuite : tCOMA Arg ArgSuite {} ;
+ArgSuite : ; 
+
 
 Body : tOBRACKET {inc_prof();} Instructions tCBRACKET {print(); reset_prof();} ;
 
@@ -66,7 +75,7 @@ Instructions : Instruction Instructions ;
 Instructions : ;
 Instruction : Aff {};
 Instruction : Decl {};
-Instruction : Invocation tPV{};
+//Instruction : Invocation tPV{};
 Instruction : If {};
 Instruction : While {};
 
@@ -122,7 +131,7 @@ E : E tMUL E { printf("Mul\n"); add_operation(MUL,$1,$1,$3); $$ = $1; pop();};
 E : E tDIV E { printf("Div\n");  add_operation(DIV, $1,$1,$3); $$ = $1; pop();};
 E : E tSUB E { printf("Sub\n"); add_operation(SOU,$1,$1,$3); $$ = $1; pop();};
 E : E tADD E { printf("Add\n"); add_operation(ADD,$1,$1,$3); $$ = $1; pop();};
-E : Invocation { printf("Invoc\n"); int addr = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr,$1,0); $$ = addr;};
+//E : Invocation { printf("Invoc\n"); int addr = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr,$1,0); $$ = addr;};
 E : tOBRACE E tCBRACE { printf("Parentheses\n"); $$=$2;};
 E : tSUB E { printf("Moins\n");  int addr = push("0_TEMPORARY", 1, integer);  add_operation(AFC, addr,0,0); add_operation(SOU, $2,$2,addr);  $$ = $2; pop();};
 E : E tEQCOND E { printf("==\n"); add_operation(EQU,$1,$1,$3); $$ = $1; pop();};
@@ -161,36 +170,8 @@ SuiteDeclConst : tID tEQ E {pop(); int addr = push($1,1, type_courant);};
 FinDeclConst : tPV;
 FinDeclConst : tCOMA SuiteDeclConst FinDeclConst;
 
+Fonction : Type tID {push_fonction($2,type_courant,get_current_index());} tOBRACE {} Args {} tCBRACE Body { printf("Déclaration de la fonction  %s\n", $1); } ;)
 
-/* //Créer un champ isConst dans la table des symboles
-DeclType : tINT {type_courant = INT; printf("Type int\n");} ;
-
-Decl : tCONST DeclType SuiteDeclConst { } ;
-SuiteDeclConst : tCOMA tID SuiteDeclConst ;
-SuiteDeclConst : tEQ E tPV { };
-SuiteDeclConst : tPV { };
-
-
-Decl : DeclType Decl SuiteDecl { } ;
-Decl : tID {push($1, 0, type_courant);};
-Decl : tID tEQ E {int addr = push($1,1, type_courant); add_operation(AFC, addr,$3,0);} ;
-SuiteDecl : tCOMA Decl SuiteDecl { };
-SuiteDecl : tPV { };
-*/
-
-Invocation : tPRINTF tOBRACE tID tCBRACE { printf("Appel de printf sur %s\n", $3); } ;
-
-/*S : E tPV
-						{ printf("RES: %d\n", $1); }
-		S
-	|					{ printf("END\n"); }
-	;
-
-E : E tADD E	{ $$ = $1 + $3; }
-	| E tSUB E	{ $$ = $1 - $3; }
-	| tOB E tCB	{ $$ = $2; }
-	| tNB				{ $$ = $1; }
-	;*/
 
 %%
 void main(void) {
