@@ -66,6 +66,9 @@ char * get_asm_line_from_op(struct operation_t op){
 		case (WR):
 			sprintf(buffer,"WR %d %d\n",op.arg1, op.arg2);
 			break;
+		case (CALL):
+			sprintf(buffer,"CALL %d %d\n",op.arg1, op.arg2);
+			break;
 	}
 	return buffer;
 }

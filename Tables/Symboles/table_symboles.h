@@ -25,6 +25,9 @@ Opérations possible :
 	- pop -> pile * -> symbole
 	- status -> nom -> pile -> char					*/
 
+#ifndef TAB_SYMB_H
+#define TAB_SYMB_H
+
 #include <stdint.h>
 
 
@@ -57,6 +60,9 @@ struct type_t {
 	int isTab;
 	 
 };
+
+//REtourne la représentation d'un type en string
+char * type_to_string(struct type_t type);
 //Constante pour les entiers
 extern const struct type_t integer;
 
@@ -119,6 +125,8 @@ void init(void);
 int push(char * nom, int isInit, struct type_t type);
 //Destruction et récupération du premier élément de la table
 struct symbole_t pop();
+//Destruction des n premiers elee=ments de la table des symboles
+void multiple_pop(int n);
 //Retourne la dernière adresse disponible
 int get_last_addr();
 //Renvoi un pointeur vers le symbole correspondant au nom de variable
@@ -126,3 +134,5 @@ struct symbole_t * get_variable(char * nom);
 //Affiche la table des symboles
 void print();
 
+
+#endif

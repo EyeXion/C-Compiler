@@ -30,6 +30,10 @@ Copie la valeur val à l'adresse @X
 
 Copie la valeur contenue dans @C à l'adresse @X en considérant que ce qui est copié est une adresse (et donc il faut ajouter BP)
 
+## AFCA @X addr
+
+Copie la valeur addr à l'adresse @X en considérant que ce qui est copié est une adresse (et donc il faut ajouter BP)
+
 ## JMP lig
 
 Saute vers la ligne lig dans le code sans condition
@@ -52,9 +56,13 @@ Met à l'adresse @X 1 si val en @A égale à celle en @B et 0 sinon
 
 ## READ @X @Y
 
-Va mettre à l'adresse @X ce qui est à l'addresse contenue à l'adresse @Y (on considère que ce qui est dans @Y est un adresse et on va voir à cette adresse)
+Va mettre à l'adresse @X ce qui est à l'addresse contenue à l'adresse @Y (on considère que ce qui est dans @Y est un adresse et on va voir à cette adresse). Attention, considérer des addresses globales (pas relatives).
 
 ## WR @X @Y
 
-Va mettre le contenue dans @Y dans l'adresse qui est la valeur dans @X (on considère que @X est un pointeur et on écrit dans l'adresse qui est contenue dans @X)
+Va mettre le contenue dans @Y dans l'adresse qui est la valeur dans @X (on considère que @X est un pointeur et on écrit dans l'adresse qui est contenue dans @X). Attention, considérer des addresses globales (pas relatives).
+
+##CALL lig taille
+
+Appelle la fonction dont la première ligne est lig est dont la taille des arguments est en @Y (afin de pouvoir bouger ebp).
 

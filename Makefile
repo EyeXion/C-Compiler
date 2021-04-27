@@ -1,7 +1,7 @@
 default : 
 	@echo "Spécifiez une cible"
 
-clean : clean_Symboles clean_Instructions clean_Lex_Yacc
+clean : clean_Symboles clean_Instructions clean_Lex_Yacc clean_Fonctions
 	@rm -f rondoudou_gcc
 	@rm -f output.txt
 
@@ -13,17 +13,24 @@ clean_Instructions:
 	@rm -f Tables/Instructions/*.o
 	@rm -f Tables/Instructions/test
 
+clean_Fonctions:
+	@rm -f Tables/Fonctions/*.o
+	@rm -f Tables/Fonctions/test
+
 clean_Lex_Yacc:
 	@rm -f Lex_Yacc/as.output Lex_Yacc/as.tab.* Lex_Yacc/lex.yy.*
 
-build : clean build_Symboles build_Instructions build_Lex_Yacc
-	gcc Lex_Yacc/as.tab.o Lex_Yacc/lex.yy.o Tables/Instructions/tab_instruc.o Tables/Symboles/table_symboles.o -ll -o rondoudou_gcc
+build : clean build_Symboles build_Instructions build_Lex_Yacc build_Fonctions
+	gcc Lex_Yacc/as.tab.o Lex_Yacc/lex.yy.o Tables/Instructions/tab_instruc.o Tables/Symboles/table_symboles.o Tables/Fonctions/tab_fonctions.o -ll -o rondoudou_gcc
 
 build_Symboles: clean_Symboles
 	gcc -c Tables/Symboles/table_symboles.c -o Tables/Symboles/table_symboles.o
 
 build_Instructions: clean_Instructions
 	gcc -c Tables/Instructions/tab_instruc.c -o Tables/Instructions/tab_instruc.o
+
+build_Fonctions : clean_Fonctions
+	gcc -c Tables/Fonctions/tab_fonctions.c -o Tables/Fonctions/tab_fonctions.o
 
 build_Lex_Yacc: clean_Lex_Yacc
 	bison -d -t -b Lex_Yacc/as Lex_Yacc/as.y
@@ -56,4 +63,7 @@ edit_Instructions:
 edit_Progs: 
 	pluma Fichiers_Tests/progC &
 
-edit: edit_Lex_Yacc edit_Symboles edit_Instructions edit_Progs
+edit_Fonctions :
+	pluma Tables/Fonctions/tab_fonctions.c Tables/Fonctions/tab_fonctions.h
+
+edit: edit_Lex_Yacc edit_Symboles edit_Instructions edit_Progs edit_Fonctions

@@ -109,6 +109,14 @@ struct symbole_t pop() {
 	return retour;
 }
 
+
+
+void multiple_pop(int n){
+	for (int i =0; i<n; i++){
+		pop();
+	}
+}
+
 struct symbole_t * get_variable(char * nom){
 	struct symbole_t * retour = NULL;
 	struct element_t * aux = pile->first;

@@ -1,9 +1,10 @@
-int main(){
-	int b[3];
-	int * c = &b[2];
-	int * f = &b[1];
-	if(1){
-		int v;
-	}
-	int y;
+
+int fonction(int * p){ 
+	int b =  *p + 2;
 }
+
+int main(){
+	int a = 255;
+	fonction(&a);
+}
+

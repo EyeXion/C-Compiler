@@ -3,15 +3,16 @@
     char id[30];
 }
 %{
+#include "../Tables/Fonctions/tab_fonctions.h"
 #include "../Tables/Symboles/table_symboles.h"
 #include <stdio.h> 
 #include <string.h>
 #include <stdlib.h>
 #include "../Tables/Instructions/tab_instruc.h"
-#include "../Tables/Fonctions/tab_fonctions.h"
 #define TAILLE 1024
 
 struct type_t type_courant;
+struct type_t return_type_fonc;
 
 int instructions_ligne_to_patch[10][20];
 int nbs_instructions_to_patch[10];
@@ -42,7 +43,7 @@ int nbs_instructions_to_patch[10];
 %left tADD tSUB
 %left tMUL tDIV
 
-%type<nombre> E DebutAff SuiteAffPointeur DebutAffPointeur EBis ETer
+%type<nombre> E DebutAff SuiteAffPointeur DebutAffPointeur EBis Invocation Args ArgSuite Arg SuiteParams Params
 
 
 
@@ -52,20 +53,24 @@ int nbs_instructions_to_patch[10];
 
 %%
 
-Main : tINT tMAIN tOBRACE Params tCBRACE Body { print(); create_asm();} ; 
-
-Params : { printf("Sans Params\n"); } ;
-Params : Param SuiteParams ;
-Param : Type tID { printf("Parametre : %s\n", $2); };
-SuiteParams : tCOMA Param SuiteParams ;
-SuiteParams : ;
 
 
-Args : Arg ArgSuite;
-Args : ;
-Arg : Type tID {int addr = push($2,1, type_courant);};
-ArgSuite : tCOMA Arg ArgSuite {} ;
-ArgSuite : ; 
+C : Fonction Fonctions;
+
+Fonctions : Fonction Fonctions;
+Fonctions : ;
+
+Main : tINT {printf("Déclaration du main\n");} tMAIN tOBRACE Args tCBRACE Body { print(); create_asm();} ; 
+
+Fonction : Type tID {return_type_fonc = type_courant; printf("Déclaration de la fonction  %s\n", $2);} tOBRACE {inc_prof();} Args {decrement_prof(); push_fonction($2,return_type_fonc,get_current_index(), $6);} tCBRACE Body { print_fonctions();} ;
+Fonction : Main {print_fonctions();};
+
+Args : Arg ArgSuite {$$ = $1 + $2; printf("Les arguments de la fonctions vont avoir une taille dans la pile de : %d\n",$$);};
+Args : {$$ = 0;};
+Arg : Type tID {int addr = push($2,1, type_courant); if (type_courant.pointeur_level > 0){$$ = taille_types[INT];} else{$$ = taille_types[type_courant.base];}};
+Arg : Type tID tOCROCH tCCROCH {int addr = push($2,1, type_courant); $$ = taille_types[INT];};
+ArgSuite : tCOMA Arg ArgSuite {$$ = $2 + $3;} ;
+ArgSuite : {$$ = 0;}; 
 
 
 Body : tOBRACKET {inc_prof();} Instructions tCBRACKET {print(); reset_prof();} ;
@@ -75,9 +80,23 @@ Instructions : Instruction Instructions ;
 Instructions : ;
 Instruction : Aff {};
 Instruction : Decl {};
-//Instruction : Invocation tPV{};
+Instruction : Invocation tPV{};
 Instruction : If {};
 Instruction : While {};
+
+
+Invocation : tID tOBRACE Params tCBRACE {multiple_pop($3); struct fonction_t fonc = get_fonction($1); add_operation(CALL,fonc.first_instruction_line, fonc.taille_args,0);};
+
+
+//Pour les tableaux quand on les passe en arguments, il faudra faire gaffe à bien les passer comme un pointeur vers un tableau et pas juste un tableau car sinon in ne pourra pas accéder au tableau de base depuis la fonction appellée. Il faut pour cela peut être rajouter un nouveau champ (isArg) dans la table des symboles (ou autre idée?)
+
+Params : {$$ = 0; printf("Sans Params\n"); } ;
+Params : Param SuiteParams {$$ = $2 + 1;};
+Param : E {printf("Parametre : %d\n", $1);};
+SuiteParams : tCOMA Param SuiteParams {$$ = $3 + 1;};
+SuiteParams : {$$ = 0;};
+
+
 
 //On considère que la première ligne du code en ASM est la ligne 0
 If : tIF tOBRACE E tCBRACE {
@@ -131,7 +150,7 @@ E : E tMUL E { printf("Mul\n"); add_operation(MUL,$1,$1,$3); $$ = $1; pop();};
 E : E tDIV E { printf("Div\n");  add_operation(DIV, $1,$1,$3); $$ = $1; pop();};
 E : E tSUB E { printf("Sub\n"); add_operation(SOU,$1,$1,$3); $$ = $1; pop();};
 E : E tADD E { printf("Add\n"); add_operation(ADD,$1,$1,$3); $$ = $1; pop();};
-//E : Invocation { printf("Invoc\n"); int addr = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr,$1,0); $$ = addr;};
+E : Invocation { printf("Invoc\n"); int addr = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr,$1,0); $$ = addr;};
 E : tOBRACE E tCBRACE { printf("Parentheses\n"); $$=$2;};
 E : tSUB E { printf("Moins\n");  int addr = push("0_TEMPORARY", 1, integer);  add_operation(AFC, addr,0,0); add_operation(SOU, $2,$2,addr);  $$ = $2; pop();};
 E : E tEQCOND E { printf("==\n"); add_operation(EQU,$1,$1,$3); $$ = $1; pop();};
@@ -141,21 +160,32 @@ E : tNOT E { printf("!\n"); };
 E : E tAND E {add_operation(MUL,$1,$1,$3); $$ = $1; pop();};
 E : E tOR E {add_operation(ADD,$1,$1,$3); $$ = $1; pop();} ;
 E : tMUL E { add_operation(READ, $2, $2, 0); $$=$2;};
-E : tADDR EBis {add_operation(COPA,$2, $2,0); $$=$2;};
-E : tADDR ETer {add_operation(COPA,$2, $2,0); $$=$2;};
 E : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if (symbole->type.isTab){add_operation(AFCA, addr,symbole->adresse,0); } else{add_operation(COP, addr,symbole->adresse,0);} $$=addr;};
-E : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if(type.pointeur_level > 0) {add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; pop(); pop();};
+E : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if(type.pointeur_level > 0) {add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3);
+ add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; pop(); pop();};
+E : tADDR EBis {add_operation(COPA,$2, $2,0); $$=$2;};
 
-EBis : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if(type.pointeur_level > 0) {add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); $$=$3; pop(); pop();};
-ETer : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); add_operation(AFCA, addr,symbole->adresse,0); $$=addr;};
+EBis : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); 
+struct type_t type = symbole->type; type.nb_blocs = 1; 
+int addr = push("0_TEMPORARY", 1, type); 
+if(type.pointeur_level > 0) {
+add_operation(COP, addr,symbole->adresse,0);
+}
+ else{
+add_operation(AFCA, addr,symbole->adresse,0);
+}
+int addr2 = push("0_TEMPORARY", 1, integer);
+add_operation(AFC, addr2, taille_types[symbole->type.base],0); 
+add_operation(MUL,$3,addr2,$3); 
+add_operation(ADD,$3,addr,$3); $$=$3; 
+pop(); pop();};
+EBis : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); add_operation(AFCA, addr,symbole->adresse,0); $$=addr;};
 
 
 
 //Créer un champ isConst dans la table des symboles
 Type : tINT {type_courant.base = INT; type_courant.pointeur_level = 0; type_courant.isTab = 0; type_courant.nb_blocs = 1; printf("Type int\n");} ;
 Type : Type tMUL {type_courant.pointeur_level++;  printf("Type int *\n");};
-//SuiteType : tMUL SuiteType {type_courant.pointeur_level++; printf(" * en plus\n");} ; 
-//SuiteType : ;
 
 Decl : Type SuiteDecl FinDecl ;
 Decl : tCONST Type SuiteDeclConst FinDeclConst;
@@ -169,10 +199,6 @@ FinDecl : tCOMA SuiteDecl FinDecl ;
 SuiteDeclConst : tID tEQ E {pop(); int addr = push($1,1, type_courant);};
 FinDeclConst : tPV;
 FinDeclConst : tCOMA SuiteDeclConst FinDeclConst;
-
-Fonction : Type tID {push_fonction($2,type_courant,get_current_index());} tOBRACE {} Args {} tCBRACE Body { printf("Déclaration de la fonction  %s\n", $1); } ;)
-
-
 %%
 void main(void) {
     init();
