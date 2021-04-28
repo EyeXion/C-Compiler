@@ -4,7 +4,6 @@ int yywrap(void){return 1;}
 void
 yyerror (char const *s)
 {
-
   fprintf (stderr, "%s\n", s);
 }
 
@@ -22,6 +21,7 @@ yyerror (char const *s)
 "printf"    { return tPRINTF; } //Degeu mais à degager
 "if"        { return tIF; }
 "while"     { return tWHILE; }
+"return"    {return tRETURN; }
 "<"         { return tLT; }
 ">"         { return tGT; }
 "=="        { return tEQCOND; }

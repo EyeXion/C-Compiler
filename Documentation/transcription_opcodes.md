@@ -62,7 +62,15 @@ Va mettre à l'adresse @X ce qui est à l'addresse contenue à l'adresse @Y (on 
 
 Va mettre le contenue dans @Y dans l'adresse qui est la valeur dans @X (on considère que @X est un pointeur et on écrit dans l'adresse qui est contenue dans @X). Attention, considérer des addresses globales (pas relatives).
 
-##CALL lig taille
+##CALL lig taille_arg addr_ret
 
-Appelle la fonction dont la première ligne est lig est dont la taille des arguments est en @Y (afin de pouvoir bouger ebp).
+Appelle la fonction dont la première ligne est lig est dont la taille des arguments en 2ème (pour bouger BP) et en trois l'addresse de retour.
+
+##RET
+
+Bouge BP et saute à l'adresse de retour (selon les valeur qui sont dans la pile de contrôle).
+
+##COPR @X taille
+
+Va copier dans l'emplacement réservé à la valeur de retour la valeur contenue dans @X (on copie à l'addresse BP - taille en gros car on a reservé en avance cet emplacement mémoire).
 

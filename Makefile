@@ -64,6 +64,6 @@ edit_Progs:
 	pluma Fichiers_Tests/progC &
 
 edit_Fonctions :
-	pluma Tables/Fonctions/tab_fonctions.c Tables/Fonctions/tab_fonctions.h
+	pluma Tables/Fonctions/tab_fonctions.c Tables/Fonctions/tab_fonctions.h &
 
 edit: edit_Lex_Yacc edit_Symboles edit_Instructions edit_Progs edit_Fonctions

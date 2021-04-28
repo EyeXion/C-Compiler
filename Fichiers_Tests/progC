@@ -1,10 +1,9 @@
-
 int fonction(int * p){ 
 	int b =  *p + 2;
+	return 1;
 }
 
 int main(){
-	int a = 255;
-	fonction(&a);
+	int b = 1;
+	fonction(&b);
 }
-
