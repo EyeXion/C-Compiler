@@ -56,9 +56,8 @@ struct type_t {
     int pointeur_level;
     //Si il s'agit d'un tableau, on enregistre sa taille (nombre de cases) (même si c'est une variable on met quand même un nb_blocs à) 
 	int nb_blocs;
-	//Si c'est un tableau, cette valeur est à 1
+	//Si c'est un tableau addressale directement, cette valeur est à 1. Si c'est un pointeur vers un tableau, valeur à 2.
 	int isTab;
-	 
 };
 
 //REtourne la représentation d'un type en string

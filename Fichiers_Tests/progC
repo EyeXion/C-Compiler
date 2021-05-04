@@ -1,9 +1,19 @@
-int fonction(int * p){ 
-	int b =  *p + 2;
+int g(int y[]){
+    int u;
+    y[1] = 2;
+    return 15;
+}
+
+
+int fonction(int p[]){ 
+    g(p);
 	return 1;
 }
 
 int main(){
-	int b = 1;
-	fonction(&b);
+	int b[2];
+	int c = fonction(b);
+    c = get();
+    b[0] = 25;
+    printf(b[0]);
 }

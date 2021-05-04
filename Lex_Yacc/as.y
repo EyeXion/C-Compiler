@@ -30,13 +30,13 @@ int nbs_instructions_to_patch[10];
 %token tMUL tDIV tADD tSUB tEQ
 %token<nombre> tNB tNBEXP
 %token<id> tID
-%token tPRINTF
+%token tPRINTF tGET
 %token tERROR
 %token<nombre> tIF tWHILE tELSE
 %token tRETURN
 %token tLT tGT tEQCOND
 %token tAND tOR
-%token tADDR
+%token tADDR 
 
 %left tLT tGT
 %left tEQCOND
@@ -45,7 +45,7 @@ int nbs_instructions_to_patch[10];
 %left tADD tSUB
 %left tMUL tDIV
 
-%type<nombre> E DebutAff SuiteAffPointeur DebutAffPointeur EBis Invocation Args ArgSuite Arg SuiteParams Params
+%type<nombre> E DebutAff SuiteAffPointeur DebutAffPointeur EBis Invocation Args ArgSuite Arg SuiteParams Params Get
 
 
 
@@ -57,51 +57,51 @@ int nbs_instructions_to_patch[10];
 
 
 
-C : Fonction Fonctions;
+C : Fonction Fonctions {add_operation(STOP,0,0,0); create_asm();};
 
 Fonctions : Fonction Fonctions;
 Fonctions : ;
 
-Main : tINT {printf("Déclaration du main\n");} tMAIN tOBRACE Args tCBRACE Body { print(); create_asm();} ; 
+Main : tINT {printf("Déclaration du main\n"); create_jump_to_main(get_current_index());} tMAIN tOBRACE Args tCBRACE Body { print(); } ; 
 
 Fonction : Type tID {return_type_fonc = type_courant; printf("Déclaration de la fonction  %s\n", $2);} tOBRACE {inc_prof();} Args {decrement_prof(); push_fonction($2,return_type_fonc,get_current_index(), $6);} tCBRACE Body { print_fonctions(); add_operation(RET,0,0,0);} ;
 Fonction : Main {print_fonctions();};
 
-Return : tRETURN E tPV {if (return_type_fonc.pointeur_level > 0 || return_type_fonc.isTab){add_operation(COPR,$2, taille_types[INT],0);} else {add_operation(COPR,$2,taille_types[return_type_fonc.base],0);} pop(); };
+Get : tGET tOBRACE tCBRACE {int addr = push("0_TEMPORARY", 0, integer); add_operation(GET,addr,0,0); $$ = addr;};
+
+Return : tRETURN E tPV {add_operation(COP,0,$2,0); pop(); };
 
 Args : Arg ArgSuite {$$ = $1 + $2; printf("Les arguments de la fonctions vont avoir une taille dans la pile de : %d\n",$$);};
 Args : {$$ = 0;};
 Arg : Type tID {int addr = push($2,1, type_courant); if (type_courant.pointeur_level > 0){$$ = taille_types[INT];} else{$$ = taille_types[type_courant.base];}};
-Arg : Type tID tOCROCH tCCROCH {int addr = push($2,1, type_courant); $$ = taille_types[INT];};
+Arg : Type tID tOCROCH tCCROCH {type_courant.isTab = 2; int addr = push($2,1, type_courant); $$ = taille_types[INT];};
 ArgSuite : tCOMA Arg ArgSuite {$$ = $2 + $3;} ;
 ArgSuite : {$$ = 0;}; 
 
 
-Body : tOBRACKET {inc_prof();} Instructions tCBRACKET {print(); reset_prof();} ;
+Body : tOBRACKET {inc_prof();} Instructions tCBRACKET {print(); reset_prof();};
 
 
 Instructions : Instruction Instructions ;
 Instructions : ;
 Instruction : Aff {};
 Instruction : Decl {};
-Instruction : Invocation tPV{};
+Instruction : Invocation tPV{pop();};
 Instruction : If {};
 Instruction : While {};
 Instruction : Return {};
 
 
-Invocation : tID tOBRACE {struct fonction_t fonc = get_fonction($1); if (fonc.return_type.pointeur_level > 0 || fonc.return_type.isTab){
- $2 = push("0_TEMPORARY_RETURN", 0, integer); 
+Invocation : tID tOBRACE {struct fonction_t fonc = get_fonction($1);}
+Params tCBRACE {struct fonction_t fonc = get_fonction($1); multiple_pop($4);
+add_operation(CALL,fonc.first_instruction_line, get_last_addr(),0); if (fonc.return_type.pointeur_level > 0 || fonc.return_type.isTab){
+ $$ = push("0_TEMPORARY_RETURN", 0, integer); 
 }
 else{
-$2 = push("0_TEMPORARY_RETURN", 0, fonc.return_type); 
-}}
+$$ = push("0_TEMPORARY_RETURN", 0, fonc.return_type); 
+}};
 
-Params tCBRACE {struct fonction_t fonc = get_fonction($1); multiple_pop($4);
-add_operation(CALL,fonc.first_instruction_line, fonc.taille_args,get_current_index() + 1); $$ = $2;};
-
-
-//Pour les tableaux quand on les passe en arguments, il faudra faire gaffe à bien les passer comme un pointeur vers un tableau et pas juste un tableau car sinon in ne pourra pas accéder au tableau de base depuis la fonction appellée. Il faut pour cela peut être rajouter un nouveau champ (isArg) dans la table des symboles (ou autre idée?)
+Invocation : tPRINTF tOBRACE E tCBRACE{add_operation(PRI,$3,0,0); pop();};
 
 Params : {$$ = 0; printf("Sans Params\n"); } ;
 Params : Param SuiteParams {$$ = $2 + 1;};
@@ -154,7 +154,7 @@ DebutAff : tID {struct symbole_t * symbole  = get_variable($1); symbole->initial
 DebutAffPointeur : tMUL SuiteAffPointeur {add_operation(READ, $2, $2, 0); $$=$2;};
 DebutAffPointeur : SuiteAffPointeur {$$=$1;};
 SuiteAffPointeur : tMUL tID {struct symbole_t * symbole  = get_variable($2); int addr = push("0_TEMPORARY", 1, symbole->type); add_operation(COP, addr,symbole->adresse,0); $$=addr;};
-SuiteAffPointeur : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = push("0_TEMPORARY", 1, symbole->type); if (symbole->type.pointeur_level > 0){add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); $$=$3; pop(); pop();};
+SuiteAffPointeur : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); int addr = push("0_TEMPORARY", 1, symbole->type); if (symbole->type.isTab == 2){add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3); add_operation(ADD,$3,addr,$3); $$=$3; pop(); pop();};
 
 
 E : tNB { int addr = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr,$1,0); $$ = addr;};
@@ -173,15 +173,18 @@ E : tNOT E { printf("!\n"); };
 E : E tAND E {add_operation(MUL,$1,$1,$3); $$ = $1; pop();};
 E : E tOR E {add_operation(ADD,$1,$1,$3); $$ = $1; pop();} ;
 E : tMUL E { add_operation(READ, $2, $2, 0); $$=$2;};
-E : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if (symbole->type.isTab){add_operation(AFCA, addr,symbole->adresse,0); } else{add_operation(COP, addr,symbole->adresse,0);} $$=addr;};
-E : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if(type.pointeur_level > 0) {add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3);
- add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; pop(); pop();};
+E : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if (symbole->type.isTab == 1){add_operation(AFCA, addr,symbole->adresse,0);} else{add_operation(COP, addr,symbole->adresse,0);} $$=addr;};
+
+
+E : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if(type.isTab == 2) {add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3);
+add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; pop(); pop();};
 E : tADDR EBis {$$=$2;};
+E : Get {$$ = $1;};
 
 EBis : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); 
 struct type_t type = symbole->type; type.nb_blocs = 1; 
 int addr = push("0_TEMPORARY", 1, type); 
-if(type.pointeur_level > 0) {
+if(type.isTab == 2) {
 add_operation(COP, addr,symbole->adresse,0);
 }
  else{

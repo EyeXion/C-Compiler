@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 
-enum opcode_t {ADD,MUL,SOU,DIV,COP,AFC,AFCA,COPA,JMP,JMF,INF,SUP,EQU,PRI,READ,WR,CALL,RET,COPR};
+enum opcode_t {ADD,MUL,SOU,DIV,COP,AFC,AFCA,JMP,JMF,INF,SUP,EQU,PRI,READ,WR,CALL,RET,GET,STOP};
 
 struct operation_t {
 	enum opcode_t opcode;
@@ -24,5 +24,7 @@ int get_current_index();
 void patch(int index, int arg);
 //Ecrit la table des intructions dans un fichier ASM
 void create_asm();
+//Crée la ligne assembleur en 1er dans le fichier pour sauter au main
+void create_jump_to_main(int line);
 
 #endif

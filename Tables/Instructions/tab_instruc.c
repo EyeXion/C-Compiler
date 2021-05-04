@@ -1,5 +1,5 @@
 #include "tab_instruc.h"
-int current_index = 0;
+int current_index = 1;
 struct operation_t tab_op[MAXTAILLE];
 
 void add_operation(enum opcode_t opcode, int arg1, int arg2, int arg3){
@@ -13,6 +13,10 @@ void add_operation(enum opcode_t opcode, int arg1, int arg2, int arg3){
 	}
 }
 
+void create_jump_to_main(int line){
+    struct operation_t new_op = {JMP,line, 0, 0};
+    tab_op[0] = new_op;
+}
 
 
 char * get_asm_line_from_op(struct operation_t op){
@@ -39,9 +43,6 @@ char * get_asm_line_from_op(struct operation_t op){
 		case (AFCA):
 			sprintf(buffer,"AFCA %d %d\n",op.arg1, op.arg2);
 			break;
-		case (COPA):
-			sprintf(buffer,"COPA %d %d\n",op.arg1, op.arg2);
-			break;
 		case (JMP):
 			sprintf(buffer,"JMP %d\n",op.arg1);
 			break;
@@ -67,14 +68,17 @@ char * get_asm_line_from_op(struct operation_t op){
 			sprintf(buffer,"WR %d %d\n",op.arg1, op.arg2);
 			break;
 		case (CALL):
-			sprintf(buffer,"CALL %d %d %d\n",op.arg1, op.arg2, op.arg3);
+			sprintf(buffer,"CALL %d %d\n",op.arg1, op.arg2);
 			break;
 		case (RET):
 			sprintf(buffer,"RET\n");
 			break;
-		case (COPR):
-			sprintf(buffer,"COPR %d %d\n",op.arg1, op.arg2);
-			break;
+        case (GET):
+            sprintf(buffer,"GET %d\n",op.arg1);
+            break;
+        case (STOP):
+            sprintf(buffer,"STOP\n");
+            break;
 	}
 	return buffer;
 }
