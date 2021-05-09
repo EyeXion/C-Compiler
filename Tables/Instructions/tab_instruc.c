@@ -77,7 +77,7 @@ char * get_asm_line_from_op(struct operation_t op){
             sprintf(buffer,"GET %d\n",op.arg1);
             break;
         case (STOP):
-            sprintf(buffer,"STOP\n");
+            sprintf(buffer,"STOP %d\n", op.arg1);
             break;
 	}
 	return buffer;

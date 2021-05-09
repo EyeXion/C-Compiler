@@ -30,7 +30,7 @@ int nbs_instructions_to_patch[10];
 %token tMUL tDIV tADD tSUB tEQ
 %token<nombre> tNB tNBEXP
 %token<id> tID
-%token tPRINTF tGET
+%token tPRINTF tGET tSTOP
 %token tERROR
 %token<nombre> tIF tWHILE tELSE
 %token tRETURN
@@ -69,6 +69,8 @@ Fonction : Main {print_fonctions();};
 
 Get : tGET tOBRACE tCBRACE {int addr = push("0_TEMPORARY", 0, integer); add_operation(GET,addr,0,0); $$ = addr;};
 
+Stop : tSTOP tOBRACE tNB tCBRACE {add_operation(STOP,$3,0,0);};
+
 Return : tRETURN E tPV {add_operation(COP,0,$2,0); pop(); };
 
 Args : Arg ArgSuite {$$ = $1 + $2; printf("Les arguments de la fonctions vont avoir une taille dans la pile de : %d\n",$$);};
@@ -90,6 +92,7 @@ Instruction : Invocation tPV{pop();};
 Instruction : If {};
 Instruction : While {};
 Instruction : Return {};
+Instruction : Stop tPV {};
 
 
 Invocation : tID tOBRACE {struct fonction_t fonc = get_fonction($1);}

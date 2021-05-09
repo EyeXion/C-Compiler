@@ -32,6 +32,7 @@ yyerror (char const *s)
 "["         { return tOCROCH;}
 "]" 		{ return tCCROCH;}
 "get"       { return tGET;}
+"stop"      { return tSTOP;}
 
 
 [0-9]+	{ yylval.nombre = atoi(yytext); return tNB; }

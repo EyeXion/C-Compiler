@@ -1,19 +1,10 @@
-int g(int y[]){
-    int u;
-    y[1] = 2;
-    return 15;
-}
-
-
-int fonction(int p[]){ 
-    g(p);
-	return 1;
+int fonction(int p){ 
+	int y = p*3;
+	return y;
 }
 
 int main(){
-	int b[2];
-	int c = fonction(b);
-    c = get();
-    b[0] = 25;
-    printf(b[0]);
+	int a;
+	int c = fonction(3);
+	stop(3);
 }

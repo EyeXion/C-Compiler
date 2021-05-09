@@ -21,7 +21,7 @@ clean_Lex_Yacc:
 	@rm -f Lex_Yacc/as.output Lex_Yacc/as.tab.* Lex_Yacc/lex.yy.*
 
 build : clean build_Symboles build_Instructions build_Lex_Yacc build_Fonctions
-	gcc Lex_Yacc/as.tab.o Lex_Yacc/lex.yy.o Tables/Instructions/tab_instruc.o Tables/Symboles/table_symboles.o Tables/Fonctions/tab_fonctions.o -ly -o rondoudou_gcc
+	gcc Lex_Yacc/as.tab.o Lex_Yacc/lex.yy.o Tables/Instructions/tab_instruc.o Tables/Symboles/table_symboles.o Tables/Fonctions/tab_fonctions.o -ll -o rondoudou_gcc
 
 build_Symboles: clean_Symboles
 	gcc -c Tables/Symboles/table_symboles.c -o Tables/Symboles/table_symboles.o
