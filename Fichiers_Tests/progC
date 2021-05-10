@@ -1,12 +1,15 @@
-int fonction(int p){ 
-	int y = p*3;
-	return y;
+int g(int o){
+	int j = o * 2;
+	return j;
+}
+
+
+int f(int p){
+	int y = p + 2;
+	return y - 5 + g(1);
 }
 
 int main(){
-	int a;
-	int c = fonction(3);
-	stop(3);
-	printf(c);
-	printf(c);
+	int a = 7;
+	int c = f(a);
 }

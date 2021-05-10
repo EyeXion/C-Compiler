@@ -34,7 +34,7 @@ Opérations possible :
 
 int last_addr = 0;
 int temp_addr = MAXADDR;
-int taille_types[] = {-1, 4};
+int taille_types[] = {-1, 1};
 int profondeur = 0;
 int last_temp_var_size;
 const struct type_t integer = {INT, 0, 1};
