@@ -7,4 +7,6 @@ int main(){
 	int a;
 	int c = fonction(3);
 	stop(3);
+	printf(c);
+	printf(c);
 }
