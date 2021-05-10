@@ -104,7 +104,7 @@ else{
 $$ = push("0_TEMPORARY_RETURN", 0, fonc.return_type); 
 }};
 
-Invocation : tPRINTF tOBRACE E tCBRACE{add_operation(PRI,$3,0,0); pop();};
+Invocation : tPRINTF tOBRACE E tCBRACE{add_operation(PRI,$3,0,0);};
 
 Params : {$$ = 0; printf("Sans Params\n"); } ;
 Params : Param SuiteParams {$$ = $2 + 1;};

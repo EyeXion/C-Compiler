@@ -1,10 +1,18 @@
-int fonction(int p){ 
-	int y = p*3;
-	return y;
+int g(int tab[]){
+	tab[1] = 10;
+	printf(tab[0]);
+	stop(15);
+	return 2;
+}
+
+int f(int p[]){
+	p[0] = 1;
+	g(p);
+	return 1;
 }
 
 int main(){
-	int a;
-	int c = fonction(3);
-	stop(3);
+	int a[5];
+	f(a);
+	printf(a[1]);
 }

@@ -1,6 +1,6 @@
-// Produit par GNU Bison 3.5.1.
+// Produit par GNU Bison 3.0.4.
 // Rapporter les bugs à <bug-bison@gnu.org>.
-// Page d'accueil: <https://www.gnu.org/software/bison/>.
+// Page d'accueil: <http://www.gnu.org/software/bison/>.
 
 digraph "Lex_Yacc/as.y"
 {
