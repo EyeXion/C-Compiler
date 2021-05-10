@@ -12,7 +12,9 @@ int f(int p[]){
 }
 
 int main(){
-	int a[5];
-	f(a);
-	printf(a[1]);
+	int a;
+	int c = fonction(3);
+	stop(3);
+	printf(c);
+	printf(c);
 }
