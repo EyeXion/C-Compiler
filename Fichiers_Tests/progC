@@ -1,15 +1,44 @@
-int g(int o){
-	int j = o * 2;
-	return j;
+int get_value() {
+	int i = 0;
+	while (i<5) {
+		printf(0);
+		stop(1);
+		printf(255);
+		stop(1);
+		i = i+1;
+	}
+	stop(15);
+	i = get();
+	return i;
 }
 
-
-int f(int p){
-	int y = p + 2;
-	return y - 5 + g(1);
+int max(int * tab, int size) {
+	int i = 0;
+	int max = 0;
+	while (i<size) {
+		if (tab[i] > max) {
+			max = tab[i];
+		}
+		i = i+1;
+	}
+	return max;
 }
 
-int main(){
-	int a = 7;
-	int c = f(a);
+int main() {
+	int tab[10];
+	int i = 0;
+	while (i<10) {
+		tab[i] = get_value();
+		i = i+1;
+	}
+	i = 0;
+	while (i<5) {
+		printf(170);
+		stop(1);
+		printf(85);
+		stop(1);
+		i = i+1;
+	}
+	stop(3);
+	printf(max(tab, 10));
 }
