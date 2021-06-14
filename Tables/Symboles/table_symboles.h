@@ -1,41 +1,7 @@
-/* TABLE DES SYMBOLE DU COMPILATEUR (PILE)
-
------------------------------------------------------
-|  symbole   |  adresse   |    type    | initialisé |
------------------------------------------------------
-|            |            |            |            |
-|            |            |            |            |
-|            |            |            |            |
-|      i     | 0x777756b8 |     int    |    false   |
-|    size    | 0x777756b8 |     int    |    true    |
------------------------------------------------------
-
-Types pour l'implémentation : 
-	- enum type_t : [int]
-	- struct symbole : {
-			char nom[30];
-			uintptr_t adresse;
-			enum type_t type;
-			char initialized;
-		}
-
-Opérations possible : 
-	- init -> pile * -> void
-	- push -> symbole -> pile * -> void
-	- pop -> pile * -> symbole
-	- status -> nom -> pile -> char					*/
-
 #ifndef TAB_SYMB_H
 #define TAB_SYMB_H
 
 #include <stdint.h>
-
-
-
-
-
-
-
 
 
 /**************************************/
@@ -45,7 +11,7 @@ Opérations possible :
 /**************************************/
 
 //Enumération des types de base reconnus 
-enum base_type_t {UNKNOWN, INT};
+enum base_type_t {UNKNOWN, INT, ADDR};
 //Table enregistrant la taille de ces types de bases (indexée sur les types)
 extern int taille_types[];
 //Structure gérant les types 
@@ -54,17 +20,18 @@ struct type_t {
     enum base_type_t base;
     //Si la variable est un pointeur, on enregitre son niveau (nombre de *)
     int pointeur_level;
-    //Si il s'agit d'un tableau, on enregistre sa taille (nombre de cases) (même si c'est une variable on met quand même un nb_blocs à) 
-	int nb_blocs;
-	//Si c'est un tableau addressale directement, cette valeur est à 1. Si c'est un pointeur vers un tableau, valeur à 2.
-	int isTab;
+    //Si il s'agit d'un tableau, on enregistre sa taille (nombre de cases) (même si c'est une variable on met quand même un nb_blocs à 1) 
+	  int nb_blocs;
+	  //Si c'est un tableau cette valeur est à 1, 0 sinon.
+	  int isTab;
 };
 
-//REtourne la représentation d'un type en string
+//Retourne la représentation d'un type en string
 char * type_to_string(struct type_t type);
 //Constante pour les entiers
 extern const struct type_t integer;
-
+//Constante pour les pointeurs
+extern const struct type_t pointer;
 
 
 /**************************************/
@@ -100,7 +67,7 @@ struct symbole_t {
     //Est il initialisé
 	int initialized;
     //Sa profondeur de création
-    int profondeur;
+  int profondeur;
 };
 
 //Fonction d'affichage d'un symbole
@@ -124,7 +91,7 @@ void init(void);
 int push(char * nom, int isInit, struct type_t type);
 //Destruction et récupération du premier élément de la table
 struct symbole_t pop();
-//Destruction des n premiers elee=ments de la table des symboles
+//Destruction des n premiers elements de la table des symboles
 void multiple_pop(int n);
 //Retourne la dernière adresse disponible
 int get_last_addr();

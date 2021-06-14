@@ -30,17 +30,17 @@ Copie la valeur val à l'adresse @X
 
 Copie la valeur contenue dans @C à l'adresse @X en considérant que ce qui est copié est une adresse (et donc il faut ajouter BP)
 
-## AFCA @X addr
+## AFCA @X val
 
-Copie la valeur addr à l'adresse @X en considérant que ce qui est copié est une adresse (et donc il faut ajouter BP)
+Copie la val à l'adresse @X en considérant que ce qui est copié est une adresse (et donc il faut ajouter BP)
 
-## JMP lig
+## JMP ins
 
-Saute vers la ligne lig dans le code sans condition
+Saute vers la ligne ins dans le code sans condition
 
-## JMF @X lig
+## JMF @X ins
 
-Saute vers la ligne lig dans le code si la valeur à l'adresse @X est 0
+Saute vers la ligne ins dans le code si la valeur à l'adresse @X est 0
 
 ## INF @X @A @B
 
@@ -62,14 +62,15 @@ Va mettre à l'adresse @X ce qui est à l'addresse contenue à l'adresse @Y (on 
 
 Va mettre le contenu de @Y dans l'adresse qui est la valeur dans @X (on considère que @X est un pointeur et on écrit dans l'adresse qui est contenue dans @X). Attention, considérer des addresses globales (pas relatives).
 
-##CALL lig taille_pile_fonction_appelante
+##CALL ins taille_pile_fonction_appelante
 
-Appelle la fonction dont la première ligne est lig et taille_pile_fonction_appelante est la taille de la zone mémoire utilisée par la fonction appelante (avant le push des args !)
+Appelle la fonction dont la première ligne est ins et taille_pile_fonction_appelante est la taille de la zone mémoire utilisée par la fonction appelante (avant le push des arguments !)
+
 ##RET
 
-Bouge BP et saute à l'adresse de retour (selon les valeur qui sont dans la pile de contrôle).
+Restore BP et saute à l'adresse de retour (selon les valeur qui sont dans la pile de contrôle).
 
-##STOP
+##STOP val
 
-Arrete le processeur (à mettre à la fin de l'ASM)
+Arrete le processeur si val vaut 0 (à mettre à la fin de l'ASM), ou, arrete le processeur pour val tick d'horloge (si val > 0)
 

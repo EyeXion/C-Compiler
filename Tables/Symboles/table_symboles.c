@@ -1,55 +1,35 @@
-/* TABLE DES SYMBOLE DU COMPILATEUR (PILE)
-
------------------------------------------------------
-|  symbole   |  adresse   |    type    | initialisé |
------------------------------------------------------
-|            |            |            |            |
-|            |            |            |            |
-|            |            |            |            |
-|      i     | 0x777756b8 |     int    |    false   |
-|    size    | 0x777756b8 |     int    |    true    |
------------------------------------------------------
-
-Types pour l'implémentation : 
-	- enum type_t : [int]
-	- struct symbole : {
-			char nom[30];
-			uintptr_t adresse;
-			enum type_t type;
-			char initialized;
-		}
-
-Opérations possible : 
-	- init -> pile * -> void
-	- push -> symbole -> pile * -> void
-	- pop -> pile * -> symbole
-	- exist -> pile * -> symbole -> char
-	- initialized -> pile * -> symbole -> char					*/
-
 #include "table_symboles.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#define MAXADDR 1024*5
 
+// Première adresse disponible
 int last_addr = 0;
-int temp_addr = MAXADDR;
-int taille_types[] = {-1, 1};
+// Tableau indexé sur les types donnant leur tailles 
+int taille_types[] = {-1, 1, 1};
+// Pronfondeur dans le code (pour la visibilité des variables)
 int profondeur = 0;
-int last_temp_var_size;
-const struct type_t integer = {INT, 0, 1};
+// Constante pour les entiers
+const struct type_t integer = {INT, 0, 1, 0};
+// Constante pour les pointeurs
+const struct type_t pointer = {ADDR, 0, 1, 0};
 
+// Structure chainant les symboles
 struct element_t {
 	struct symbole_t symbole;
 	struct element_t * suivant;
 };
 
+// Structure de la pile des symboles
 struct pile_t {
 	int taille;
 	struct element_t * first;
 };
+
+// Pile des symboles
 struct pile_t * pile;
 
+// Fonction d'affichage pour un type
 char * type_to_string(struct type_t type) {
     char * star = "*";
     char * resultat = malloc(sizeof(char)*20);
@@ -64,6 +44,7 @@ char * type_to_string(struct type_t type) {
     return resultat;
 }
 
+// Fonction d'affichage pour un symbole
 void print_symbole(struct symbole_t symbole) {
     char * type = type_to_string(symbole.type);
     if (symbole.initialized) {
@@ -74,14 +55,14 @@ void print_symbole(struct symbole_t symbole) {
     free(type);
 }
 
+// Initialisation de la pile
 void init (void) {
-    pile = malloc(sizeof(struct pile_t));
+  pile = malloc(sizeof(struct pile_t));
 	pile->first = NULL;
 	pile->taille = 0;
 }
 
-
-
+// Fonction d'ajout d'un symbole à la pile
 int push(char * nom, int isInit, struct type_t type) {
 	struct element_t * aux = malloc(sizeof(struct element_t));
 	struct symbole_t symbole = {"", last_addr, type, isInit,profondeur}; 
@@ -95,6 +76,7 @@ int push(char * nom, int isInit, struct type_t type) {
 	return addr_var;
 }
 
+// Fonction renvoyant et supprimant le premier symbole
 struct symbole_t pop() {
 	struct symbole_t retour = {"", 0, UNKNOWN, 0, 0};
 	struct element_t * aux;
@@ -109,14 +91,14 @@ struct symbole_t pop() {
 	return retour;
 }
 
-
-
+// Fonction supprimant les n premiers symboles
 void multiple_pop(int n){
 	for (int i =0; i<n; i++){
 		pop();
 	}
 }
 
+// Fonction d'accès a un symbole par son nom
 struct symbole_t * get_variable(char * nom){
 	struct symbole_t * retour = NULL;
 	struct element_t * aux = pile->first;
@@ -132,6 +114,7 @@ struct symbole_t * get_variable(char * nom){
 	return retour;
 }
 
+// Fonction d'affichage de la pile
 void print() {
 	printf("Affichage de la Table des Symboles\n\tSize : %d\n\tContenu : \n", pile->taille);
 	struct element_t * aux = pile->first;
@@ -146,11 +129,17 @@ void print() {
 	}
 }
 
-
+// Getteur sur la première adresse dispo (utile pour le CALL)
 int get_last_addr(){
 	return last_addr;
 }
 
+
+
+
+/********************************/
+/*** GESTION DE LA PROFONDEUR ***/
+/********************************/
 void inc_prof() {
     profondeur++;
 }

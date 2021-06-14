@@ -9,3 +9,4 @@ Tables/Fonctions/test
 Lex_Yacc/as.output 
 Lex_Yacc/as.tab.* 
 Lex_Yacc/lex.yy.*
+Lex_Yacc/as.dot

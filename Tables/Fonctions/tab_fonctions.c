@@ -1,9 +1,14 @@
 #include "tab_fonctions.h"
 
+#define MAX_TAILLE_FONC 50
+
+// Table des fonctions
 struct fonction_t tab_fonctions[MAX_TAILLE_FONC];
+// Index dispo dans la table
 int indexTab = 0;
 
 
+// Renvoi une fonction a partir de son nom
 struct fonction_t get_fonction(char * name){
 	int not_found = 1;
 	int i = 0;
@@ -18,6 +23,7 @@ struct fonction_t get_fonction(char * name){
 	return res;
 }
 
+// Insere une fonction
 void push_fonction(char * name, struct type_t type, int line, int taille_args){
 	 if (indexTab < MAX_TAILLE_FONC){
 		struct fonction_t fonc;
@@ -31,6 +37,7 @@ void push_fonction(char * name, struct type_t type, int line, int taille_args){
 	}
 }
 
+// Fonction d'affichage des fonctions connues
 void print_fonctions(){
 	printf("Affichage table des fonctions\n");
 	printf("\t Size : %d\n",indexTab);

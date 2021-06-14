@@ -1,20 +1,14 @@
 #ifndef TAB_INST_H
 #define TAB_INST_H
 
-#define MAXTAILLE 1024
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
 
+// Liste de codes des instruction 
 enum opcode_t {ADD,MUL,SOU,DIV,COP,AFC,AFCA,JMP,JMF,INF,SUP,EQU,PRI,READ,WR,CALL,RET,GET,STOP};
-
-struct operation_t {
-	enum opcode_t opcode;
-	int arg1;
-	int arg2;
-	int arg3;
-};
 
 //Ajoute une opération dans la table (à la fin)
 void add_operation(enum opcode_t opcode, int arg1, int arg2, int arg3);

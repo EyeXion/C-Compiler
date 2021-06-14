@@ -1,6 +1,11 @@
 default : 
 	@echo "Spécifiez une cible"
 
+
+
+###########################
+###      NETTOYAGE      ###
+###########################
 clean : clean_Symboles clean_Instructions clean_Lex_Yacc clean_Fonctions
 	@rm -f rondoudou_gcc
 	@rm -f output.txt
@@ -20,6 +25,11 @@ clean_Fonctions:
 clean_Lex_Yacc:
 	@rm -f Lex_Yacc/as.output Lex_Yacc/as.tab.* Lex_Yacc/lex.yy.*
 
+
+
+###########################
+###     COMPILATION     ###
+###########################
 build : clean build_Symboles build_Instructions build_Lex_Yacc build_Fonctions
 	gcc Lex_Yacc/as.tab.o Lex_Yacc/lex.yy.o Tables/Instructions/tab_instruc.o Tables/Symboles/table_symboles.o Tables/Fonctions/tab_fonctions.o -ll -o rondoudou_gcc
 
@@ -38,6 +48,11 @@ build_Lex_Yacc: clean_Lex_Yacc
 	gcc -c Lex_Yacc/as.tab.c -o Lex_Yacc/as.tab.o
 	gcc -c Lex_Yacc/lex.yy.c -o Lex_Yacc/lex.yy.o
 
+
+
+###########################
+###        TESTS        ###
+###########################
 test_Symboles: build_Symboles
 	gcc -c Tables/Symboles/test.c -o Tables/Symboles/test.o
 	gcc Tables/Symboles/test.o Tables/Symboles/table_symboles.o -o Tables/Symboles/test
@@ -48,9 +63,19 @@ test_Instructions: build_Instructions
 	gcc Tables/Instructions/test.o Tables/Instructions/tab_instruc.o -o Tables/Instructions/test
 	Tables/Instructions/test
 
+test_Fonctions: build_Fonctions
+	gcc -c Tables/Fonctions/test.c -o Tables/Fonctions/test.o
+	gcc Tables/Fonctions/test.o Tables/Fonctions/tab_fonctions.o -o Tables/Fonctions/test
+	Tables/Fonctions/test
+
 test: build
 	cat Fichiers_Tests/progC | ./rondoudou_gcc 
 
+
+
+###########################
+###       EDITION       ###
+###########################
 edit_Lex_Yacc: 
 	pluma Lex_Yacc/al.lex Lex_Yacc/as.y &
 
