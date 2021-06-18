@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include "../Tables/Instructions/tab_instruc.h"
 #define TAILLE 1024
+#define SECURISED (0)
 
 struct type_t type_courant;
 struct type_t return_type_fonc;
@@ -217,11 +218,17 @@ Instruction : Print tPV;
 /*************************************/
 /*************************************/
 
-Invocation : tID tOBRACE                 {push("0_TEMPORARY_CTX", 0, integer);                                    // On reserve la place du contexte
-                                          push("0_TEMPORARY_ADDR_RT", 0, pointer);                                // On reserve la place de l'adresse de retour                                
+Invocation : tID tOBRACE                 {if (!SECURISED) {
+																						push("0_TEMPORARY_CTX", 0, integer);                                  // On reserve la place du contexte
+                                          	push("0_TEMPORARY_ADDR_RT", 0, pointer);                              // On reserve la place de l'adresse de retour    
+																					}                            
                                          }
 						 Params tCBRACE              {struct fonction_t fonc = get_fonction($1);                              // On récupère la fonction
-                                          multiple_pop($4 + 2);                                                       // On pop les paramètres de la table des symboles
+                                          if (!SECURISED) {
+																						multiple_pop($4 + 2);                                                 // On pop les paramètres de la table des symboles 
+																					} else {
+																						multiple_pop($4);                                                     // On pop les paramètres de la table des symboles
+																					}                                                     
                                           add_operation(CALL,fonc.first_instruction_line, get_last_addr(),0);     // On écrit le CALL
 																					// On renvoi l'adresse de la valeur retour de la fonction
                                           if (fonc.return_type.pointeur_level > 0 || fonc.return_type.isTab) {
@@ -688,6 +695,6 @@ SuiteInitTab :                           {$$ = 0;
 
 %%
 void main(void) {
-    init();
+  init();
 	yyparse();
 }
