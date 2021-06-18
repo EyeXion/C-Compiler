@@ -70,7 +70,7 @@ char * get_asm_line_from_op(struct operation_t op){
 			sprintf(buffer,"SUP %d %d %d\n",op.arg1, op.arg2, op.arg3);
 			break;
 		case (EQU):
-			sprintf(buffer,"DIV %d %d %d\n",op.arg1, op.arg2, op.arg3);
+			sprintf(buffer,"EQU %d %d %d\n",op.arg1, op.arg2, op.arg3);
 			break;
 		case (PRI):
 			sprintf(buffer,"PRI %d\n",op.arg1);

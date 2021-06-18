@@ -79,9 +79,9 @@ C : Fonctions                     {add_operation(STOP,0,0,0);
 
 // Le main, renvoi un int, possède le mot clé main, des arguments et un body
 // Dès que le main est reconnu (token main) on met en place le JMP
-Main : tINT tMAIN                 {create_jump_to_main(get_current_index()); printf("DANS LE MAIN \n");
+Main : tINT tMAIN                 {create_jump_to_main(get_current_index());
                                   }
-       tOBRACE Args tCBRACE Body {print();}; 
+       tOBRACE Args tCBRACE Body; 
 
 
 
@@ -217,8 +217,11 @@ Instruction : Print tPV;
 /*************************************/
 /*************************************/
 
-Invocation : tID tOBRACE Params tCBRACE  {struct fonction_t fonc = get_fonction($1);                              // On récupère la fonction
-                                          multiple_pop($3);                                                       // On pop les paramètres de la table des symboles
+Invocation : tID tOBRACE                 {push("0_TEMPORARY_CTX", 0, integer);                                    // On reserve la place du contexte
+                                          push("0_TEMPORARY_ADDR_RT", 0, pointer);                                // On reserve la place de l'adresse de retour                                
+                                         }
+						 Params tCBRACE              {struct fonction_t fonc = get_fonction($1);                              // On récupère la fonction
+                                          multiple_pop($4 + 2);                                                       // On pop les paramètres de la table des symboles
                                           add_operation(CALL,fonc.first_instruction_line, get_last_addr(),0);     // On écrit le CALL
 																					// On renvoi l'adresse de la valeur retour de la fonction
                                           if (fonc.return_type.pointeur_level > 0 || fonc.return_type.isTab) {
@@ -374,7 +377,7 @@ SymboleAffectation : SymboleAffectation tOCROCH E tCCROCH  {if ($1.type.pointeur
 																																add_operation(AFC, addr, taille_types[$1.type.base],0);                   // Sinon le type de base
 																															}
 		                                                          add_operation(MUL,$3,addr,$3);                                              // On multiple le nombre de décalage par la taille du type
-		                                                          add_operation(ADD,$3,$1.adresse,$3);                                        // On l'ajoute a l'adresse de base
+		                                                          add_operation(ADD,$1.adresse,$1.adresse,$3);                                        // On l'ajoute a l'adresse de base
 																															$1.type.isTab = 0;
 		                                                          $$=$1; 
 		                                                          pop(); 
@@ -418,7 +421,6 @@ SymboleAffectation : tMUL SymboleAffectation               {if ($2.type.pointeur
 E : tNB                                  {int addr = push("0_TEMPORARY", 1, integer);              // On reserve la place de la variable temporaire
                                           add_operation(AFC, addr,$1,0);                           // On Affecte la valeur a cette adresse
                                           $$ = addr;                                               // On renvoi l'adresse
-																					printf("Nombre %d@%d\n", $1, addr);
                                          };
 
 // Un nombre sous forme XeY, même traitement qu'un nombre classique 
@@ -480,7 +482,7 @@ E : tSUB E                               {int addr = push("0_TEMPORARY", 1, inte
 
 
 // Opérateur == (idem multiplication)
-E : E tEQCOND E                          {add_operation(EQU,$1,$1,$3); 
+E : E tEQCOND E                          {add_operation(EQU,$1,$1,$3);
                                           $$ = $1; 
                                           pop();
                                          };
@@ -492,8 +494,6 @@ E : E tGT E                              {add_operation(SUP,$1,$1,$3);
 
 // Opérateur < (idem multiplication)
 E : E tLT E                              {add_operation(INF,$1,$1,$3); 
-																					printf("INF %d %d %d\n", $1, $1, $3);
-																					print();
                                           $$ = $1; 
                                           pop();
                                          };
@@ -502,7 +502,7 @@ E : tNOT E                               {int addr = push("0_TEMPORARY", 1, inte
                                           add_operation(AFC, addr,0,0);                            // On affecte le 0
                                           add_operation(EQU, $2, addr, $2);                        // On applique le 0==E
                                           $$ = $2;                                                 // On renvoi l'adresse
-                                          pop();   
+                                          pop();
                                          };
 
 // Opérateur E && E' <=> E*E' (idem multiplication)
@@ -539,7 +539,6 @@ E : tID                                  {struct symbole_t * symbole  = get_vari
                                             add_operation(COP, addr,symbole->adresse,0);           // Si c'est autre chose, on copie la valeur
                                           } 
                                           $$ = addr;
-																					printf("variable stoquée a l'adresse %d \n", addr);
                                          };
 
 // Une variable sous forme de tableau
@@ -547,10 +546,10 @@ E : tID tOCROCH E tCCROCH                {struct symbole_t * symbole  = get_vari
                                           struct type_t type = symbole->type;                                // On récupère le type
                                           type.nb_blocs = 1;                                                 
                                           int addr = push("0_TEMPORARY", 1, type);                           // On créé la variable temporaire
-                                          if (type.isTab == 2) {
-                                            add_operation(COP, addr,symbole->adresse,0);
-                                          } else {
+                                          if (type.isTab) {
                                             add_operation(AFCA, addr,symbole->adresse,0);
+                                          } else {
+                                            add_operation(COP, addr,symbole->adresse,0);
                                           } 
                                           int addr2 = push("0_TEMPORARY", 1, integer); 
                                           add_operation(AFC, addr2, taille_types[symbole->type.base],0);     
@@ -569,10 +568,10 @@ EBis : tID tOCROCH E tCCROCH             {struct symbole_t * symbole  = get_vari
                                           struct type_t type = symbole->type; 
                                           type.nb_blocs = 1; 
                                           int addr = push("0_TEMPORARY", 1, type); 
-                                          if(type.isTab == 2) {
-                                            add_operation(COP, addr,symbole->adresse,0);
-                                          } else {
+                                          if(type.isTab) {
                                             add_operation(AFCA, addr,symbole->adresse,0);
+                                          } else {
+                                            add_operation(COP, addr,symbole->adresse,0);
                                           }
                                           int addr2 = push("0_TEMPORARY", 1, integer);
                                           add_operation(AFC, addr2, taille_types[symbole->type.base],0); 

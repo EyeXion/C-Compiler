@@ -32,6 +32,7 @@ yyerror (char const *s)
 ">"         { return tGT;       }    // Token plus grand que
 "=="        { return tEQCOND;   }    // Token égal comparaison
 
+"!"         { return tNOT;      }    // Token NOT 
 "&&"        { return tAND;      }    // Token ET
 "||"        { return tOR;       }    // Token OU
 

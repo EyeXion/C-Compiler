@@ -72,7 +72,6 @@ int push(char * nom, int isInit, struct type_t type) {
 	pile->first = aux;
 	pile->taille++;
 	int addr_var = last_addr;
-	printf("Push de %s avec une taille de type de %d et %d blocs a l'adresse %d\n", nom, taille_types[type.base],type.nb_blocs,last_addr);
 	last_addr += (type.nb_blocs)*taille_types[type.base]; 
 	return addr_var;
 }
@@ -87,7 +86,7 @@ struct symbole_t pop() {
 		retour = aux->symbole;
 		free(aux);
 		pile->taille--;
-		last_addr -= taille_types[retour.type.base]; 
+		last_addr -= taille_types[retour.type.base] * retour.type.nb_blocs; 
 	}
 	return retour;
 }
