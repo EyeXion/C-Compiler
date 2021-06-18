@@ -10,9 +10,9 @@ int taille_types[] = {-1, 1, 1};
 // Pronfondeur dans le code (pour la visibilité des variables)
 int profondeur = 0;
 // Constante pour les entiers
-const struct type_t integer = {INT, 0, 1, 0};
+const struct type_t integer = {INT, 0, 1, 0, 0};
 // Constante pour les pointeurs
-const struct type_t pointer = {ADDR, 0, 1, 0};
+const struct type_t pointer = {ADDR, 0, 1, 0, 0};
 
 // Structure chainant les symboles
 struct element_t {
@@ -31,15 +31,15 @@ struct pile_t * pile;
 
 // Fonction d'affichage pour un type
 char * type_to_string(struct type_t type) {
-    char * star = "*";
-    char * resultat = malloc(sizeof(char)*20);
-    for (int i = 0; i< type.pointeur_level; i++){
-        strcat(resultat,star);
-    }
+  char * star = "*";
+  char * resultat = malloc(sizeof(char)*20);
+  for (int i = 0; i< type.pointeur_level; i++){
+      strncat(resultat,star,20);
+  }
 	if (type.base == INT) {
-		strcat(resultat,"int");
+		strncat(resultat,"int",20);
 	} else {;
-	    strcat(resultat,"unknown");
+	  strncat(resultat,"unknown",20);
 	}
     return resultat;
 }
@@ -48,9 +48,9 @@ char * type_to_string(struct type_t type) {
 void print_symbole(struct symbole_t symbole) {
     char * type = type_to_string(symbole.type);
     if (symbole.initialized) {
-		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d, isTab : %d}\n", symbole.nom, symbole.adresse, type, symbole.profondeur,symbole.type.isTab);
+		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d, isTab : %d, isConst : %d}\n", symbole.nom, symbole.adresse, type, symbole.profondeur,symbole.type.isTab, symbole.type.isConst);
 	} else {
-		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d, isTab : %d}\n", symbole.nom, symbole.adresse, type,symbole.profondeur,symbole.type.isTab);
+		printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d, isTab : %d, isConst : %d}\n", symbole.nom, symbole.adresse, type,symbole.profondeur,symbole.type.isTab, symbole.type.isConst);
 	}
     free(type);
 }
@@ -72,6 +72,7 @@ int push(char * nom, int isInit, struct type_t type) {
 	pile->first = aux;
 	pile->taille++;
 	int addr_var = last_addr;
+	printf("Push de %s avec une taille de type de %d et %d blocs a l'adresse %d\n", nom, taille_types[type.base],type.nb_blocs,last_addr);
 	last_addr += (type.nb_blocs)*taille_types[type.base]; 
 	return addr_var;
 }
@@ -116,15 +117,11 @@ struct symbole_t * get_variable(char * nom){
 
 // Fonction d'affichage de la pile
 void print() {
-	printf("Affichage de la Table des Symboles\n\tSize : %d\n\tContenu : \n", pile->taille);
+	printf("Affichage de la Table des Symboles\n\tSize : %d\n\tTop : %d\n\tContenu : \n", pile->taille, last_addr);
 	struct element_t * aux = pile->first;
 	int i;
 	for (i=0; i < pile->taille; i++) {
-		if (aux->symbole.initialized) {
-			printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:OUI, profondeur : %d, isTab : %d}\n", aux->symbole.nom, aux->symbole.adresse, type_to_string(aux->symbole.type), aux->symbole.profondeur, aux->symbole.type.isTab);
-		} else {
-			printf("\t\t{nom:%s, adresse:%ld, type:%s, initialized:NON, profondeur : %d, isTab : %d}\n", aux->symbole.nom, aux->symbole.adresse, type_to_string(aux->symbole.type), aux->symbole.profondeur, aux->symbole.type.isTab);
-		}
+		print_symbole(aux->symbole);
 		aux = aux->suivant;
 	}
 }
@@ -153,7 +150,6 @@ int get_prof() {
 }
 
 void reset_prof(){
-    printf("Profondeur dans reset : %d\n", profondeur);
     while (pile->first != NULL && pile->first->symbole.profondeur == profondeur){
 	    pop();
     }

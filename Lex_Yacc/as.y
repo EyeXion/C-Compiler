@@ -1,10 +1,20 @@
+%code requires {
+	#include "../Tables/Symboles/table_symboles.h"
+
+	struct while_t {
+		int n_ins_cond;
+		int n_ins_jmf;
+	};
+}
+
 %union {
 	int nombre;
-    char id[30];
+	struct symbole_t symbole;
+  char id[30];
+	struct while_t my_while;
 }
 %{
 #include "../Tables/Fonctions/tab_fonctions.h"
-#include "../Tables/Symboles/table_symboles.h"
 #include <stdio.h> 
 #include <string.h>
 #include <stdlib.h>
@@ -17,6 +27,9 @@ struct type_t return_type_fonc;
 // Tableau pour le management des patchs des JMP
 int instructions_ligne_to_patch[10][20];
 int nbs_instructions_to_patch[10];
+
+// Utile a l'affectation avec des pointeurs
+int first_etoile = 1;
 
 %}
 
@@ -32,8 +45,8 @@ int nbs_instructions_to_patch[10];
 %token<nombre> tNB tNBEXP
 %token<id> tID
 %token tPRINTF tGET tSTOP
-%token tERROR
-%token<nombre> tIF tWHILE tELSE
+%token<nombre> tIF tELSE
+%token<my_while> tWHILE
 %token tRETURN
 %token tLT tGT tEQCOND
 %token tAND tOR
@@ -46,7 +59,10 @@ int nbs_instructions_to_patch[10];
 %left tADD tSUB
 %left tMUL tDIV
 
-%type<nombre> E SuiteAffPointeur DebutAffPointeur EBis Invocation Args ArgSuite Arg SuiteParams Params Get
+%right tINT tMAIN
+
+%type<symbole> SymboleAffectation
+%type<nombre> E EBis Invocation Args ArgSuite Arg SuiteParams Params Get InitTab SuiteInitTab
 
 %%
 
@@ -57,10 +73,15 @@ int nbs_instructions_to_patch[10];
 /*************************************/
 
 // Un programme C correspond a des focntion et un main, une fois que le programme est compilé, on ajoute le STOP et l'on exporte l'assembleur.
-C : Fonctions Main                {add_operation(STOP,0,0,0); 
+C : Fonctions                     {add_operation(STOP,0,0,0); 
                                    create_asm();
                                   };
 
+// Le main, renvoi un int, possède le mot clé main, des arguments et un body
+// Dès que le main est reconnu (token main) on met en place le JMP
+Main : tINT tMAIN                 {create_jump_to_main(get_current_index()); printf("DANS LE MAIN \n");
+                                  }
+       tOBRACE Args tCBRACE Body {print();}; 
 
 
 
@@ -73,30 +94,11 @@ C : Fonctions Main                {add_operation(STOP,0,0,0);
 /*************************************/
 
 // Des fonctions sont une suite de fonctions (possiblement nulle)
-Fonctions : Fonction Fonctions;
-Fonctions : ;
-
-
-
-
-
-/*************************************/
-/*************************************/
-/************** Main *****************/
-/*************************************/
-/*************************************/
-
-// Le main, renvoi un int, possède le mot clé main, des arguments et un body
-// Dès que le main est reconnu (token main) on met en place le JMP
-Main : tINT tMAIN                 {printf("Déclaration du main\n");
-                                   create_jump_to_main(get_current_index());
-                                  }
-       tOBRACE Args tCBRACE Body; 
-
+Fonctions : Main ;
+Fonctions : Fonction Fonctions ;
 
 // Une fonction possède un Type , un identifiant
-Fonction : Type tID               {return_type_fonc = type_courant;                                // On récupère le ype de la fonction
-                                   printf("Déclaration de la fonction  %s\n", $2);                  
+Fonction : Type tID               {return_type_fonc = type_courant;                                // On récupère le ype de la fonction                 
                                   } 
            tOBRACE                {inc_prof();                                                     // On incrémente la profondeur pour les arguments, ils font parti de la fonction
                                   } 
@@ -143,15 +145,17 @@ Args : Arg ArgSuite               {$$ = $1 + $2;                                
 Args :                            {$$ = 0;                                                         // Il peut ne pas y avoir d'arguments, alors la taille est 0
                                   };
 // Un argument possède un type et un identifiant (nom)
-Arg : Type tID                    { int addr = push($2,1, type_courant);                           // On stocke l'argument dans la pile des symboles      
-                                    if (type_courant.pointeur_level > 0) {
-                                      $$ = taille_types[ADDR];                                     
-                                    } else {
-                                      $$ = taille_types[type_courant.base];                        
-                                    }
+Arg : Type tID                    {type_courant.nb_blocs = 1;
+																	int addr = push($2,1, type_courant);                           // On stocke l'argument dans la pile des symboles      
+                                   if (type_courant.pointeur_level > 0) {
+                                     $$ = taille_types[ADDR];                                     
+                                   } else {
+                                     $$ = taille_types[type_courant.base];                        
+                                   }
                                   };
 // Un argument peut aussi être un tableau (argument classique et crochets) il est considéré comme un pointeur
-Arg : Type tID tOCROCH tCCROCH    {type_courant.pointeur_level++;                                  // Considéré comme un simple pointeur
+Arg : Type tID tOCROCH tCCROCH    {type_courant.nb_blocs = 1;
+																	type_courant.pointeur_level++;                                  // Considéré comme un simple pointeur
                                    int addr = push($2,1, type_courant);
                                    $$ = taille_types[ADDR];
                                   };
@@ -298,13 +302,16 @@ Else :                                   {int current = get_current_index();
 /*************************************/
 /*************************************/
 
-While : tWHILE tOBRACE E tCBRACE         {add_operation(JMF,$3,0,0);                               // Ecriture du JMF
-                                          $1 = get_current_index() - 1;                            // Enregistrement de la ligne a patch
+While : tWHILE 													 {$1.n_ins_cond = get_current_index();                    // On enregistre l'endroit de la condition (pour le JMP en fin de while)
+																				 }
+
+				tOBRACE E tCBRACE                {add_operation(JMF,$4,0,0);                               // Ecriture du JMF
+                                          $1.n_ins_jmf = get_current_index() - 1;                  // Enregistrement du numero d'instruction du jmf à patch
                                           pop();                                                   // Pop de la condition
                                          }
         Body                             {int current = get_current_index();                       // Patch du JMF apres le body
-                                          patch($1,current + 1);
-                                          add_operation(JMP,$1,0,0);                               // JMP au debut de la boucle
+                                          patch($1.n_ins_jmf,current + 1);
+                                          add_operation(JMP,$1.n_ins_cond,0,0);                               // JMP au debut de la boucle
                                          };
 
 
@@ -314,55 +321,80 @@ While : tWHILE tOBRACE E tCBRACE         {add_operation(JMF,$3,0,0);            
 
 /*************************************/
 /*************************************/
-/************ Affectations ***********/           // A RETRAVAILLER 
+/************ Affectations ***********/           
 /*************************************/
 /*************************************/
 
 // Affectation simple
-Aff : tID tEQ E tPV                      {struct symbole_t * symbole  = get_variable($1);          // On récupère le symbole
-                                          symbole->initialized = 1;                                // Le symbole devient initialisé
-																					add_operation(COP, symbole->adresse, $3,0);              // On affecte la valeur
-                                          pop();                                                   // On pop l'expression
+Aff : tID tEQ E tPV                      {struct symbole_t * symbole = get_variable($1); 
+																				  symbole->initialized = 1;
+                                          if (symbole->type.isConst == 1 && symbole->type.pointeur_level == 0 || symbole->type.isTab) {
+																						printf("\033[31;01m ERROR : \033[00m %s est READ-ONLY\n", symbole->nom);
+																					  exit(2);
+																					} else {
+																						add_operation(COP,symbole->adresse,$3,0);                     // On affecte la valeur
+                                          	pop();                                                        // On pop l'expression
+																						first_etoile = 1;                                             // On reinitialise first_etoile
+																					}
                                          }; 
 
-// Debut d'une affectation avec déreférencement de pointeur //////// A RETRAVAILLERRRRRR
-DebutAffPointeur : tMUL SuiteAffPointeur {add_operation(READ, $2, $2, 0); 
-                                          $$=$2;
-                                         };
-
-DebutAffPointeur : SuiteAffPointeur      {$$=$1;
-                                         };
-
-SuiteAffPointeur : tMUL tID              {struct symbole_t * symbole = get_variable($2); 
-                                          int addr = push("0_TEMPORARY", 1, symbole->type); 
-                                          add_operation(COP, addr,symbole->adresse,0); 
-                                          $$=addr;
-                                         };
-
-SuiteAffPointeur : tID tOCROCH E tCCROCH {struct symbole_t * symbole = get_variable($1); 
-                                          int addr = push("0_TEMPORARY", 1, symbole->type); 
-                                          if (symbole->type.isTab == 2) {
-                                            add_operation(COP, addr,symbole->adresse,0);
-                                          } else { 
-                                            add_operation(AFCA, addr,symbole->adresse,0);
-                                          } 
-                                          int addr2 = push("0_TEMPORARY", 1, integer); 
-                                          add_operation(AFC, addr2, taille_types[symbole->type.base],0); 
-                                          add_operation(MUL,$3,addr2,$3); 
-                                          add_operation(ADD,$3,addr,$3); 
-                                          $$=$3; 
-                                          pop(); 
-                                          pop();
-                                         };
-
-
-
 // Affectation sur un pointeur
-Aff : DebutAffPointeur tEQ E tPV         {add_operation(WR,$1,$3,0); 
-                                          pop(); 
-                                          pop();
-                                         };
+Aff : SymboleAffectation tEQ E tPV       {if ($1.type.isConst == 1 && $1.type.pointeur_level == 0 || $1.type.isTab) {
+																						printf("\033[31;01m ERROR : \033[00m %s ou un de ses déréférencement est READ-ONLY\n", $1.nom);
+																					  exit(2);
+																					} else {
+																						add_operation(WR,$1.adresse,$3,0);                     // On affecte la valeur
+                                          	pop();                                                 // On pop l'expression
+                                          	pop();                                                 // On pop la variable temporaire de l'adresse
+																					}
+                                         }; 
 
+// Debut d'une affectation avec déreférencement de pointeur
+SymboleAffectation : tID                                   {struct symbole_t * symbole = get_variable($1); 
+																														symbole->initialized = 1;
+																														int addr = push("0_TEMPORARY", 1, pointer);
+                                                            if (symbole->type.isTab) {
+	                                                            add_operation(AFCA, addr, symbole->adresse,0);                              // Si tableau AFCA
+	                                                          } else { 
+	                                                            add_operation(COP, addr, symbole->adresse,0);                               // Si pointeur COP
+	                                                          } 
+																														struct symbole_t symbolebis = *symbole;  
+																														symbolebis.adresse = addr;
+                                                            $$ = symbolebis;                                                              // On renvoi un symbole pointant sur la copie de l'adresse
+                                                           };
+
+SymboleAffectation : SymboleAffectation tOCROCH E tCCROCH  {if ($1.type.pointeur_level == 0) {                                            // Check déréférençable
+	                  																					printf("\033[35;01m WARNING : \033[00m déréférencement exessif\n");
+										                  											} else {
+																															$1.type.pointeur_level--;                                                   // On baisse le niveau de pointeur
+                                                            	int addr = push("0_TEMPORARY", 1, integer);                                 // On alloue la place pour stocker la taille du type pointé
+																															if ($1.type.pointeur_level > 0) {
+		                                                            add_operation(AFC, addr, taille_types[ADDR],0);                           // Si on est encore un pointeur, la taille d'un adresse
+																															} else {
+																																add_operation(AFC, addr, taille_types[$1.type.base],0);                   // Sinon le type de base
+																															}
+		                                                          add_operation(MUL,$3,addr,$3);                                              // On multiple le nombre de décalage par la taille du type
+		                                                          add_operation(ADD,$3,$1.adresse,$3);                                        // On l'ajoute a l'adresse de base
+																															$1.type.isTab = 0;
+		                                                          $$=$1; 
+		                                                          pop(); 
+		                                                          pop();
+										                  											} 
+                                                           };
+
+SymboleAffectation : tMUL SymboleAffectation               {if ($2.type.pointeur_level == 0) {                                            // Check déréférençable
+	                  																					printf("\033[35;01m WARNING : \033[00m déréférencement exessif\n");
+										                  											} else {
+																															$2.type.pointeur_level--;                                                   // On baisse le niveau de pointeur 
+																															$2.type.isTab = 0;
+																															if (first_etoile) {
+																																first_etoile = 0;                                                         // Le premier déréférencement doit être skip a cause du WR
+																															} else {
+				                                                        add_operation(READ, $2.adresse, $2.adresse,0);                            // 
+				                                                        $$=$2;
+																															}
+										                  											}
+                                                           };
 
 
 
@@ -386,6 +418,7 @@ Aff : DebutAffPointeur tEQ E tPV         {add_operation(WR,$1,$3,0);
 E : tNB                                  {int addr = push("0_TEMPORARY", 1, integer);              // On reserve la place de la variable temporaire
                                           add_operation(AFC, addr,$1,0);                           // On Affecte la valeur a cette adresse
                                           $$ = addr;                                               // On renvoi l'adresse
+																					printf("Nombre %d@%d\n", $1, addr);
                                          };
 
 // Un nombre sous forme XeY, même traitement qu'un nombre classique 
@@ -393,6 +426,10 @@ E : tNBEXP                               {int addr = push("0_TEMPORARY", 1, inte
                                           add_operation(AFC, addr,$1,0); 
                                           $$ = addr;
                                          };
+
+
+
+
 
 // Une Multiplication
 E : E tMUL E                             {add_operation(MUL,$1,$1,$3);                             // On Multiplie les valeurs et stockons le résultat dans la première variable temporaire
@@ -418,6 +455,11 @@ E : E tADD E                             {add_operation(ADD,$1,$1,$3);
                                           pop();
                                          };
 
+
+
+
+
+
 // Une invocation
 E : Invocation                           {$$ = $1;                                                 // Une invocation renvoi déjà l'adresse, cette règle n'est qu'un cast d'Invocation en E
                                          };
@@ -434,68 +476,217 @@ E : tSUB E                               {int addr = push("0_TEMPORARY", 1, inte
                                           pop();                                                   // On libère la mémoire temporaire utilisée par 0
                                          };
 
+
+
+
+// Opérateur == (idem multiplication)
 E : E tEQCOND E                          {add_operation(EQU,$1,$1,$3); 
                                           $$ = $1; 
                                           pop();
                                          };
-
+// Opérateur > (idem multiplication)
 E : E tGT E                              {add_operation(SUP,$1,$1,$3); 
                                           $$ = $1; 
                                           pop();
                                          };
 
+// Opérateur < (idem multiplication)
 E : E tLT E                              {add_operation(INF,$1,$1,$3); 
+																					printf("INF %d %d %d\n", $1, $1, $3);
+																					print();
+                                          $$ = $1; 
+                                          pop();
+                                         };
+// Opérateur !E <=> E==0
+E : tNOT E                               {int addr = push("0_TEMPORARY", 1, integer);              // On réserve la variable temporaire pour le 0
+                                          add_operation(AFC, addr,0,0);                            // On affecte le 0
+                                          add_operation(EQU, $2, addr, $2);                        // On applique le 0==E
+                                          $$ = $2;                                                 // On renvoi l'adresse
+                                          pop();   
+                                         };
+
+// Opérateur E && E' <=> E*E' (idem multiplication)
+E : E tAND E                             {add_operation(MUL,$1,$1,$3); 
                                           $$ = $1; 
                                           pop();
                                          };
 
-E : tNOT E                               { printf("!\n"); };
+// Opérateur E || E' <=> E+E' (idem multiplication)
+E : E tOR E                              {add_operation(ADD,$1,$1,$3); 
+                                          $$ = $1; 
+                                          pop();
+                                         };
 
-E : E tAND E {add_operation(MUL,$1,$1,$3); $$ = $1; pop();};
-E : E tOR E {add_operation(ADD,$1,$1,$3); $$ = $1; pop();} ;
-E : tMUL E { add_operation(READ, $2, $2, 0); $$=$2;};
-E : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if (symbole->type.isTab == 1){add_operation(AFCA, addr,symbole->adresse,0);} else{add_operation(COP, addr,symbole->adresse,0);} $$=addr;};
 
 
-E : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); if(type.isTab == 2) {add_operation(COP, addr,symbole->adresse,0);} else{add_operation(AFCA, addr,symbole->adresse,0);} int addr2 = push("0_TEMPORARY", 1, integer); add_operation(AFC, addr2, taille_types[symbole->type.base],0); add_operation(MUL,$3,addr2,$3);
-add_operation(ADD,$3,addr,$3); add_operation(READ,$3,$3,0); $$=$3; pop(); pop();};
+
+
+// Déréférencement de pointeur
+E : tMUL E                               {add_operation(READ, $2, $2, 0);                          // Extraction en mémoire
+                                          $$=$2;
+                                         };
+
+
+
+// Une variable
+E : tID                                  {struct symbole_t * symbole  = get_variable($1);          // On cherche la variable dans la table des symboles
+                                          struct type_t type = symbole->type;                      // On récupère le type
+                                          type.nb_blocs = 1; 
+                                          int addr = push("0_TEMPORARY", 1, type);                 // On créé la variable temporaire
+                                          if (symbole->type.isTab == 1) {
+                                            add_operation(AFCA, addr,symbole->adresse,0);          // Si c'est un tableau on affecte l'adresse du début
+                                          } else {
+                                            add_operation(COP, addr,symbole->adresse,0);           // Si c'est autre chose, on copie la valeur
+                                          } 
+                                          $$ = addr;
+																					printf("variable stoquée a l'adresse %d \n", addr);
+                                         };
+
+// Une variable sous forme de tableau
+E : tID tOCROCH E tCCROCH                {struct symbole_t * symbole  = get_variable($1);                    // On récupère le symbole
+                                          struct type_t type = symbole->type;                                // On récupère le type
+                                          type.nb_blocs = 1;                                                 
+                                          int addr = push("0_TEMPORARY", 1, type);                           // On créé la variable temporaire
+                                          if (type.isTab == 2) {
+                                            add_operation(COP, addr,symbole->adresse,0);
+                                          } else {
+                                            add_operation(AFCA, addr,symbole->adresse,0);
+                                          } 
+                                          int addr2 = push("0_TEMPORARY", 1, integer); 
+                                          add_operation(AFC, addr2, taille_types[symbole->type.base],0);     
+                                          add_operation(MUL,$3,addr2,$3);
+                                          add_operation(ADD,$3,addr,$3); 
+                                          add_operation(READ,$3,$3,0); 
+                                          $$=$3; 
+                                          pop(); 
+                                          pop();
+                                         };
+
 E : tADDR EBis {$$=$2;};
 E : Get {$$ = $1;};
 
-EBis : tID tOCROCH E tCCROCH {struct symbole_t * symbole  = get_variable($1); 
-struct type_t type = symbole->type; type.nb_blocs = 1; 
-int addr = push("0_TEMPORARY", 1, type); 
-if(type.isTab == 2) {
-add_operation(COP, addr,symbole->adresse,0);
-}
- else{
-add_operation(AFCA, addr,symbole->adresse,0);
-}
-int addr2 = push("0_TEMPORARY", 1, integer);
-add_operation(AFC, addr2, taille_types[symbole->type.base],0); 
-add_operation(MUL,$3,addr2,$3); 
-add_operation(ADD,$3,addr,$3); $$=$3; 
-pop(); pop();};
-EBis : tID { printf("Id\n"); struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); add_operation(AFCA, addr,symbole->adresse,0); $$=addr;};
+EBis : tID tOCROCH E tCCROCH             {struct symbole_t * symbole  = get_variable($1); 
+                                          struct type_t type = symbole->type; 
+                                          type.nb_blocs = 1; 
+                                          int addr = push("0_TEMPORARY", 1, type); 
+                                          if(type.isTab == 2) {
+                                            add_operation(COP, addr,symbole->adresse,0);
+                                          } else {
+                                            add_operation(AFCA, addr,symbole->adresse,0);
+                                          }
+                                          int addr2 = push("0_TEMPORARY", 1, integer);
+                                          add_operation(AFC, addr2, taille_types[symbole->type.base],0); 
+                                          add_operation(MUL,$3,addr2,$3); 
+                                          add_operation(ADD,$3,addr,$3); 
+                                          $$=$3; 
+                                          pop(); 
+                                          pop();
+                                         };
+
+
+EBis : tID { struct symbole_t * symbole  = get_variable($1); struct type_t type = symbole->type; type.nb_blocs = 1; int addr = push("0_TEMPORARY", 1, type); add_operation(AFCA, addr,symbole->adresse,0); $$=addr;};
 
 
 
-//Créer un champ isConst dans la table des symboles
-Type : tINT {type_courant.base = INT; type_courant.pointeur_level = 0; type_courant.isTab = 0; type_courant.nb_blocs = 1; printf("Type int\n");} ;
-Type : Type tMUL {type_courant.pointeur_level++;  printf("Type int *\n");};
 
-Decl : Type SuiteDecl FinDecl ;
-Decl : tCONST Type SuiteDeclConst FinDeclConst;
 
-SuiteDecl : tID {push($1, 0, type_courant); printf("Suite Decl\n");};
-SuiteDecl : tID tEQ E {pop(); int addr = push($1,1, type_courant);};
-SuiteDecl : tID tOCROCH tNB tCCROCH {type_courant.isTab = 1; type_courant.nb_blocs = $3; push($1, 0, type_courant);} ;
-FinDecl : tPV { printf("Fin Decl\n");};
-FinDecl : tCOMA SuiteDecl FinDecl ;
 
-SuiteDeclConst : tID tEQ E {pop(); int addr = push($1,1, type_courant);};
-FinDeclConst : tPV;
-FinDeclConst : tCOMA SuiteDeclConst FinDeclConst;
+
+
+
+
+/*************************************/
+/*************************************/
+/*************** Types ***************/          
+/*************************************/
+/*************************************/
+
+// Type INT
+Type : tINT                              {type_courant.base = INT; 
+                                          type_courant.pointeur_level = 0;
+																					type_courant.isConst = 0;
+                                         };
+
+// Type pointeur
+Type : Type tMUL                         {type_courant.pointeur_level++;                           // On ajoute un niveau de pointeur
+                                         };
+
+// Constante
+Type : tCONST Type                       {type_courant.isConst = 1;
+                                         };
+
+
+
+
+/*
+Type : tINT TypeNext
+Type : tCONST tINT TypeNext
+
+TypeNext :
+| tMUL TypeNext
+*/
+
+
+
+/*************************************/
+/*************************************/
+/************ Déclaration ************/          
+/*************************************/
+/*************************************/
+
+// Une déclaration est un type, un identifiant eventuellement initialisé, et fin de déclaration (une autre ou un ;);
+Decl : Type UneDecl FinDecl ;
+
+// Une déclaration d'une simple variable sans initialisation
+UneDecl : tID                            {type_courant.isTab = 0;                                  // On est pas un tableau
+                                          type_courant.nb_blocs = 1;                              // On fixe le nombre de blocs
+                                          push($1, 0, type_courant);
+                                         };
+
+// Une déclaration d'une simple variable avec initialisation
+UneDecl : tID tEQ E                      {pop();                                                   // On pop l'expression
+                                          type_courant.isTab = 0;                                  // On est pas un tableau   
+                                          type_courant.nb_blocs = 1;                              // On fixe le nombre de blocs                             
+                                          int addr = push($1,1, type_courant);                     // On déclare la variable qui a la même adresse que la variable temporaire, et, a donc déjà la valeur
+                                         }; 
+
+// Une déclaration d'un tableau sans initialisation
+UneDecl : tID tOCROCH tNB tCCROCH        {type_courant.isTab = 1;                                  // On est un tableau
+																					type_courant.pointeur_level++;                           // On augmente le niveau de pointeur (un tableau est un pointeur)
+                                          type_courant.nb_blocs = $3;                              // On fixe le nombre de blocs
+                                          push($1, 0, type_courant);
+                                         };
+
+// Une déclaration d'un tableau avec initialisation
+UneDecl : tID tOCROCH tNB tCCROCH tEQ tOBRACKET InitTab tCBRACKET    {if ($3 != $7) {
+																																				printf("\033[31;01m ERROR : \033[00m Initialisation de %s : %d éléments donnés, %d éléments requis\n", $1, $7, $3);
+																					  														exit(2);
+																																			} else {
+																																				type_courant.isTab = 1; 
+																					                              type_courant.pointeur_level++;                           // On augmente le niveau de pointeur (un tableau est un pointeur)
+                                                                      	type_courant.nb_blocs = $3; 
+																																				int i;
+																																				for (i=0;i<$3;i++) {
+																																					pop();
+																																				}
+                                                                      	push($1, 1, type_courant);
+																																			}
+                                                                     };
+
+// Un ; ou une autre déclaration
+FinDecl : tPV;
+FinDecl : tCOMA UneDecl FinDecl ;
+
+// Initialisation des tableau
+InitTab : E SuiteInitTab                 {$$ = $2 + 1; 
+                                         };
+SuiteInitTab : tCOMA E SuiteInitTab      {$$ = $3 + 1; 
+                                         };
+SuiteInitTab :                           {$$ = 0;
+                                         };
+
+
+
 %%
 void main(void) {
     init();

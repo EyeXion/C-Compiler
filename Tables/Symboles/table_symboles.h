@@ -24,6 +24,8 @@ struct type_t {
 	  int nb_blocs;
 	  //Si c'est un tableau cette valeur est à 1, 0 sinon.
 	  int isTab;
+		//Si c'est une constante
+		int isConst;
 };
 
 //Retourne la représentation d'un type en string
