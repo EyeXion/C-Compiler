@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include "../Tables/Instructions/tab_instruc.h"
 #define TAILLE 1024
-#define SECURISED (0)
+#define SECURISED (1)
 
 struct type_t type_courant;
 struct type_t return_type_fonc;
