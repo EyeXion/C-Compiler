@@ -10,7 +10,8 @@
 %union {
 	int nombre;
 	struct symbole_t symbole;
-  char id[30];
+    char id[30];
+    char str[300];
 	struct while_t my_while;
 }
 %{
@@ -45,7 +46,8 @@ int first_etoile = 1;
 %token tMUL tDIV tADD tSUB tEQ
 %token<nombre> tNB tNBEXP
 %token<id> tID
-%token tPRINTF tGET tSTOP
+%token<str> tSTR
+%token tPRINT tGET tSTOP
 %token<nombre> tIF tELSE
 %token<my_while> tWHILE
 %token tRETURN
@@ -116,9 +118,83 @@ Get : tGET tOBRACE tCBRACE        {int addr = push("0_TEMPORARY", 0, integer);  
                                   };
 
 // Print, une fonction particulière
-Print : tPRINTF tOBRACE E tCBRACE {add_operation(PRI,$3,0,0);                                      // On ajoute l'instruction PRI
-																	 pop();                                                          // On supprime la variable temporaire
+Print : tPRINT tOBRACE E tCBRACE  {add_operation(PRI,$3,0,0);                                      // On ajoute l'instruction PRI
+								                   pop();                                                          // On supprime la variable temporaire
                                   };
+
+// Print, une fonction particulière
+Print : tPRINT tOBRACE tSTR tCBRACE  {int i = 0;
+                                      int decalage = 0;
+                                      char previous = 'a';
+                                      while ($3[i] != '\0') {
+                                        if (previous == '\\' && $3[i] == 'n') {
+                                          $3[i - decalage - 1] = '\n';
+                                          previous = 'a';
+                                          decalage++;
+                                        } else {
+                                          $3[i-decalage] = $3[i];
+                                          previous = $3[i];
+                                        }
+                                        i++;
+                                      }
+                                      $3[i-decalage] = $3[i];
+                                      i=0;
+                                      int termine = $3[i+1] == '"';
+                                      int addr = push("0_TEMPORARY", 0, integer); 
+                                      while (!termine) {
+                                        if ($3[i+1] != '"') {
+                                          add_operation(AFC, addr + i, $3[i+1], 0);
+                                        } else {
+                                          termine = 1;
+                                        }
+                                        i++;
+                                        if (!termine && $3[i+1] != '"') {
+                                          add_operation(AFC, addr + i, $3[i+1], 0);
+                                        } else {
+                                          termine = 1;
+                                        }
+                                        i++;
+                                        if (!termine && $3[i+1] != '"') {
+                                          add_operation(AFC, addr + i, $3[i+1], 0);
+                                        } else {
+                                          termine = 1;
+                                        }
+                                        i++;
+                                        if (!termine && $3[i+1] != '"') {
+                                          add_operation(AFC, addr + i, $3[i+1], 0);
+                                        } else {
+                                          termine = 1;
+                                        }
+
+                                        i = i - 3;
+                                        termine = 0;
+                                        if ($3[i+1] != '"') {
+                                          add_operation(PRIC, addr + i, 0, 0);
+                                        } else {
+                                          termine = 1;
+                                        }
+                                        i++;
+                                        if (!termine && $3[i+1] != '"') {
+                                          add_operation(PRIC, addr + i, 0, 0);
+                                        } else {
+                                          termine = 1;
+                                        }
+                                        i++;
+                                        if (!termine && $3[i+1] != '"') {
+                                          add_operation(PRIC, addr + i, 0, 0);
+                                        } else {
+                                          termine = 1;
+                                        }
+                                        i++;
+                                        if (!termine && $3[i+1] != '"') {
+                                          add_operation(PRIC, addr + i, 0, 0);
+                                        } else {
+                                          termine = 1;
+                                        }
+                                        i++;
+                                      }
+                                      pop();                                                         // On supprime la variable temporaire
+                                     }; 
 
 // Stop, une fonction particulière
 Stop : tSTOP tOBRACE tNB tCBRACE  {add_operation(STOP,$3,0,0);                                     // On ajoute juste l'instruction stop

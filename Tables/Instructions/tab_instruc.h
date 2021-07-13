@@ -8,7 +8,7 @@
 
 
 // Liste de codes des instruction 
-enum opcode_t {ADD,MUL,SOU,DIV,COP,AFC,AFCA,JMP,JMF,INF,SUP,EQU,PRI,READ,WR,CALL,RET,GET,STOP};
+enum opcode_t {ADD,MUL,SOU,DIV,COP,AFC,AFCA,JMP,JMF,INF,SUP,EQU,PRI,PRIC,READ,WR,CALL,RET,GET,STOP};
 
 //Ajoute une opération dans la table (à la fin)
 void add_operation(enum opcode_t opcode, int arg1, int arg2, int arg3);

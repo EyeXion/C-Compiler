@@ -75,6 +75,9 @@ char * get_asm_line_from_op(struct operation_t op){
 		case (PRI):
 			sprintf(buffer,"PRI %d\n",op.arg1);
 			break;
+    case (PRIC):
+			sprintf(buffer,"PRIC %d\n",op.arg1);
+			break;
 		case (READ):
 			sprintf(buffer,"READ %d %d\n",op.arg1, op.arg2);
 			break;

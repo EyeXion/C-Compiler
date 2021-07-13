@@ -41,7 +41,7 @@ yyerror (char const *s)
 "]" 		    { return tCCROCH;   }    // Token crochet ouvrante
 
 "get"       { return tGET;      }    // Token fonction get
-"printf"    { return tPRINTF;   }    // Token fonction print
+"print"     { return tPRINT;    }    // Token fonction print
 "stop"      { return tSTOP;     }    // Token fonction stop
 
 "+"			    { return tADD;      }    // Token addition
@@ -56,6 +56,8 @@ yyerror (char const *s)
 
 [0-9]+	        { yylval.nombre = atoi(yytext); return tNB; }    // Token nombre au format classique
 [0-9]+e[0-9]+ 	{ yylval.nombre = -1; return tNB;        }       // Token nombre au format exponentiel
+
+["][^"]*["]     { strcpy(yylval.str, yytext); return tSTR; }
 
 [a-zA-Z][a-zA-Z0-9_]* { strcpy(yylval.id, yytext); return tID; } // Chaine de caractère (identifiant variable, fonction..)
 
