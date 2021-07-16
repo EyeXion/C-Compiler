@@ -131,6 +131,10 @@ Print : tPRINT tOBRACE tSTR tCBRACE  {int i = 0;
                                           $3[i - decalage - 1] = '\n';
                                           previous = 'a';
                                           decalage++;
+                                        } else if (previous == '\\' && $3[i] == '0') {
+                                          $3[i - decalage - 1] = '\0';
+                                          previous = 'a';
+                                          decalage++;
                                         } else {
                                           $3[i-decalage] = $3[i];
                                           previous = $3[i];
